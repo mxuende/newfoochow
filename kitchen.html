@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台 — 新福州素食园</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0F0E0C;--surface:#1A1916;--surface2:#232118;--surface3:#2D2B25;--surface4:#373530;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#EDE9E2;--text2:#9A9590;--text3:#666360;
+  --accent:#D97020;--accent-dk:#B55A18;
+  --green:#4CAF78;--green-bg:rgba(76,175,120,0.12);
+  --amber:#E8B840;--amber-bg:rgba(232,184,64,0.12);
+  --red:#E05858;--red-bg:rgba(224,88,88,0.1);
+  --blue:#5090E0;--blue-bg:rgba(80,144,224,0.1);
+  --r:12px;--rsm:8px;
+}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.logo{font-size:14px;font-weight:600;}
+.live-pill{display:flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;padding:3px 8px;border-radius:9px;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.topbar-right{display:flex;gap:6px;align-items:center;}
+.stat-chip{background:var(--surface2);border:1px solid var(--border);border-radius:13px;padding:4px 11px;font-size:12px;color:var(--text2);}
+.stat-chip b{color:var(--text);font-weight:600;}
+.btn-sm{padding:5px 11px;border:1px solid var(--border2);border-radius:13px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;transition:all 0.13s;}
+.btn-sm:hover{background:var(--surface3);color:var(--text);}
+.btn-danger{color:var(--red);border-color:rgba(224,88,88,0.25);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-green{color:var(--green);border-color:rgba(76,175,120,0.25);}
+.btn-green:hover{background:var(--green-bg);}
+.sidebar-toggle{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1;}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;min-height:0;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:180px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:width 0.2s,padding 0.2s;overflow:hidden;}
+.sidebar.collapsed{width:0;}
+.sidebar-inner{width:180px;padding:12px 8px;overflow-y:auto;flex:1;}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.7px;text-transform:uppercase;margin:12px 0 4px;padding:0 4px;}
+.nav-label:first-child{margin-top:0;}
+.nav-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 8px;border:none;background:none;color:var(--text2);font-size:12px;font-family:inherit;border-radius:var(--rsm);cursor:pointer;text-align:left;transition:all 0.12s;}
+.nav-btn:hover{background:var(--surface2);color:var(--text);}
+.nav-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.nav-btn .rev{font-size:10px;color:var(--text3);}
+.today-tag{font-size:9px;background:var(--accent);color:#fff;border-radius:5px;padding:1px 4px;margin-left:2px;}
+.no-hist{font-size:11px;color:var(--text3);padding:3px 8px;}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px;}
+.pc{display:none;}.pc.active{display:block;}
+
+/* SECTION HEADER */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.sec-title{font-size:17px;font-weight:600;}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:var(--surface2);border-radius:var(--rsm);padding:3px;width:fit-content;margin-bottom:14px;}
+.tab-btn{padding:6px 14px;border:none;background:none;color:var(--text2);font-size:13px;font-family:inherit;border-radius:6px;cursor:pointer;transition:all 0.13s;}
+.tab-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+
+/* ORDERS GRID */
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.order-card.done{border-color:rgba(76,175,120,0.2);background:rgba(76,175,120,0.03);}
+.order-card.timeout{border-color:rgba(224,88,88,0.4);}
+.order-card.archived{border-color:rgba(255,255,255,0.04);opacity:0.6;}
+.oc-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;}
+.oc-table{font-size:17px;font-weight:600;}
+.oc-time{font-size:11px;color:var(--text3);margin-top:1px;}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;}
+.badge-pend{background:var(--amber-bg);color:var(--amber);}
+.badge-done{background:var(--green-bg);color:var(--green);}
+.badge-timeout{background:var(--red-bg);color:var(--red);}
+.badge-tk{background:var(--blue-bg);color:var(--blue);}
+.badge-archived{background:rgba(255,255,255,0.06);color:var(--text3);}
+.oc-items{margin-bottom:7px;}
+.oc-item{display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.oc-item:last-child{border-bottom:none;}
+.oc-item-name{flex:1;color:var(--text2);}
+.oc-item-temp{font-size:10px;color:var(--text3);}
+.oc-item-qty{font-weight:600;font-size:12px;}
+.oc-item.completed-prev{opacity:0.4;text-decoration:line-through;}
+.oc-section-label{font-size:9px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;padding:4px 0 2px;color:var(--text3);}
+.oc-section-label.new{color:var(--accent);}
+.oc-section-label.done-lbl{color:var(--green);}
+.oc-addons{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.oc-note{background:var(--surface2);border-radius:5px;padding:5px 7px;font-size:11px;color:var(--text2);margin-bottom:7px;}
+.oc-footer{display:flex;justify-content:space-between;align-items:center;}
+.oc-actions{display:flex;gap:4px;}
+.timeout-lbl{font-size:10px;color:var(--red);font-weight:600;margin-bottom:5px;}
+
+/* DRINK STATS */
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;}
+.ds-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 12px;display:flex;align-items:center;gap:9px;}
+.ds-info{flex:1;min-width:0;}
+.ds-name{font-size:12px;font-weight:500;}
+.ds-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.ds-bar-wrap{width:36px;height:3px;background:var(--surface3);border-radius:2px;}
+.ds-bar{height:3px;background:var(--accent);border-radius:2px;}
+
+/* SETTINGS / MENU */
+.settings-block{margin-bottom:22px;}
+.settings-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:13px;}
+.setting-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+input[type=number].num-in{width:60px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:12px;padding:4px 7px;font-family:inherit;outline:none;}
+.tog{position:relative;width:38px;height:22px;cursor:pointer;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-track{position:absolute;inset:0;background:var(--surface3);border-radius:11px;transition:background 0.2s;}
+.tog input:checked+.tog-track{background:var(--green);}
+.tog-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.tog input:checked~.tog-thumb{transform:translateX(16px);}
+
+/* MENU EDITOR */
+.menu-cat-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
+.menu-cat-hd{padding:11px 13px;font-size:13px;font-weight:600;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.menu-cat-body{padding:0 13px 8px;}
+.mi-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.mi-row:last-child{border-bottom:none;}
+.mi-name{flex:1;color:var(--text);}
+.mi-prices{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pf{display:flex;align-items:center;gap:2px;font-size:11px;color:var(--text3);}
+.pi{width:50px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:3px 5px;font-family:inherit;outline:none;}
+.pi:focus{border-color:var(--accent);}
+.del-btn{color:var(--red);border:none;background:none;font-size:15px;cursor:pointer;padding:0 2px;opacity:0.6;}
+.del-btn:hover{opacity:1;}
+.add-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.add-in{flex:1;min-width:80px;background:var(--surface3);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:11px;padding:5px 7px;font-family:inherit;outline:none;}
+.add-in:focus{border-color:var(--accent);}
+.add-btn{padding:5px 10px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+
+/* QUICK NOTES */
+.qnotes-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.qn-chip{display:flex;align-items:center;gap:4px;padding:4px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;font-size:12px;}
+.qn-del{border:none;background:none;color:var(--red);cursor:pointer;font-size:13px;padding:0;}
+.qn-row{display:flex;gap:7px;}
+.qn-in{flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:12px;padding:6px 9px;font-family:inherit;outline:none;}
+
+/* PRINT PLACEHOLDER */
+.print-ph{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;text-align:center;color:var(--text3);}
+.print-ph-title{font-size:14px;font-weight:600;color:var(--text2);margin:10px 0 6px;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:44px 20px;color:var(--text3);font-size:13px;}
+.empty-icon{font-size:32px;margin-bottom:9px;}
+
+/* ARCHIVED SECTION */
+.archived-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;margin-bottom:8px;color:var(--text3);font-size:12px;user-select:none;}
+.archived-toggle:hover{color:var(--text2);}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;display:none;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:20px;max-width:300px;width:90%;text-align:center;}
+.modal h3{font-size:14px;margin-bottom:5px;}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;}
+.modal-btns{display:flex;gap:7px;justify-content:center;}
+.mbtn-cancel{padding:7px 16px;border:1px solid var(--border2);border-radius:13px;background:none;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;}
+.mbtn-confirm{padding:7px 16px;border-radius:13px;background:var(--red);color:#fff;border:none;font-family:inherit;font-size:12px;cursor:pointer;}
+
+.refresh-note{font-size:11px;color:var(--text3);margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="收起侧边栏">☰</button>
+    <div class="logo">🍹 新福州素食园 · 后台</div>
+    <div class="live-pill"><div class="live-dot"></div>实时</div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-chip">待做 <b id="stat-pending">0</b></div>
+    <button class="btn-sm" onclick="refresh()">刷新</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="nav-label">今天</div>
+      <div id="nav-today"></div>
+      <div class="nav-label">历史账单</div>
+      <div id="nav-history"></div>
+      <div class="nav-label" style="margin-top:16px">管理</div>
+      <button class="nav-btn" id="nav-menu" onclick="showManage('menu')">堂食菜单</button>
+      <button class="nav-btn" id="nav-tkmenu" onclick="showManage('tkmenu')">外带菜单</button>
+      <button class="nav-btn" id="nav-notes" onclick="showManage('notes')">备注设置</button>
+      <button class="nav-btn" id="nav-settings" onclick="showManage('settings')">系统设置</button>
+      <button class="nav-btn" id="nav-print" onclick="showManage('print')">打印设置</button>
+      <button class="nav-btn" onclick="window.open('report.html','_blank')" style="color:var(--accent);margin-top:4px">📊 账单报告</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DAY VIEW -->
+    <div class="pc active" id="pc-day">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-title" id="day-title">今天</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px" id="day-meta"></div>
+        </div>
+        <button class="btn-sm btn-danger" onclick="confirmClearDay()">清空当天</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-active" onclick="switchTab('active')">进行中</button>
+        <button class="tab-btn" id="tab-archived" onclick="switchTab('archived')">已结束</button>
+        <button class="tab-btn" id="tab-tk" onclick="switchTab('tk')">外带</button>
+        <button class="tab-btn" id="tab-drinks" onclick="switchTab('drinks')">饮料统计</button>
+      </div>
+
+      <div class="refresh-note" id="refresh-note"></div>
+      <div id="tab-content"></div>
+    </div>
+
+    <!-- DINE-IN MENU -->
+    <div class="pc" id="pc-menu">
+      <div class="sec-hd">
+        <div class="sec-title">堂食菜单</div>
+        <button class="btn-sm btn-danger" onclick="resetMenu('dine')">恢复默认</button>
+      </div>
+      <div id="menu-editor"></div>
+    </div>
+
+    <!-- TAKEAWAY MENU -->
+    <div class="pc" id="pc-tkmenu">
+      <div class="sec-hd">
+        <div class="sec-title">外带菜单</div>
+        <button class="btn-sm" onclick="addTkCat()">+ 添加分类</button>
+      </div>
+      <div id="tkmenu-editor"></div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="pc" id="pc-notes">
+      <div class="sec-hd"><div class="sec-title">快捷备注</div></div>
+      <div class="settings-block">
+        <div class="qnotes-wrap" id="qnotes-wrap"></div>
+        <div class="qn-row">
+          <input class="qn-in" id="qn-input" placeholder="添加新备注..." onkeydown="if(event.key==='Enter')addQNote()">
+          <button class="add-btn" onclick="addQNote()">添加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="pc" id="pc-settings">
+      <div class="sec-hd"><div class="sec-title">系统设置</div></div>
+      <div class="settings-block">
+        <div class="settings-title">提醒</div>
+        <div class="setting-row">
+          <div><div class="setting-label">新订单提示音</div><div class="setting-sub">有新单或修改时发出提示音</div></div>
+          <label class="tog"><input type="checkbox" id="set-sound" checked onchange="saveSetting('sound',this.checked)"><div class="tog-track"></div><div class="tog-thumb"></div></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">超时提醒（分钟）</div><div class="setting-sub">超时后订单卡标红</div></div>
+          <input type="number" class="num-in" id="set-timeout" value="10" min="1" max="60" onchange="saveSetting('timeout',parseInt(this.value)||10)">
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINT -->
+    <div class="pc" id="pc-print">
+      <div class="sec-hd"><div class="sec-title">打印设置</div></div>
+      <div class="print-ph">
+        <div style="font-size:36px">🖨️</div>
+        <div class="print-ph-title">热敏打印机 — 即将开放</div>
+        <div style="font-size:12px;line-height:1.7">此功能需要配置热敏打印机。<br>配置好打印机后联系开发者设置。<br><br>目前可用浏览器 Ctrl+P 打印账单页面。</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-body"></p>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="closeModal()">取消</button>
+      <button class="mbtn-confirm" id="modal-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyA6u8YxJxx5ZPqCdMbzEHuuREUpJs9yFgE",
+  authDomain:"new-foochow-vegetarian-da965.firebaseapp.com",
+  databaseURL:"https://new-foochow-vegetarian-da965-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"new-foochow-vegetarian-da965",
+  storageBucket:"new-foochow-vegetarian-da965.firebasestorage.app",
+  messagingSenderId:"933797712684",
+  appId:"1:933797712684:web:410ca8bf84d3743397d289"
+});
+var db=firebase.database();
+
+// ── DEFAULT MENU ──
+var DEFAULT_MENU=[
+  {cat:'Coffee',catZh:'咖啡',items:[
+    {id:'kopi-o',name:'Kopi O',hotPrice:2.00,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'kopi',name:'Kopi',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kopi-c',name:'Kopi C',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kopi-tarik',name:'Kopi Tarik',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'nescafe-o',name:'Nescafe O',hotPrice:2.50,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'nescafe',name:'Nescafe',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'neslo',name:'Neslo',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Tea',catZh:'茶',items:[
+    {id:'teh-o',name:'Teh O',hotPrice:2.00,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'teh',name:'Teh',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'teh-tarik',name:'Teh Tarik',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'teh-c',name:'Teh C',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'lemon-tea',name:'Lemon Tea',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'chinese-tea',name:'Chinese Tea',hotPrice:2.00,coldPrice:2.00,hasHot:true,hasCold:true},
+    {id:'teh-misai',name:'Teh Misai Kuching',hotPrice:2.50,coldPrice:2.50,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Milo / Susu',items:[
+    {id:'milo-o',name:'Milo O',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'milo-c',name:'Milo C',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'milo',name:'Milo',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'susu',name:'Susu',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'susu-c',name:'Susu C',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Drinks',catZh:'饮料',items:[
+    {id:'fresh-limau',name:'Fresh Limau',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'fresh-lemon',name:'Fresh Lemon',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'kokokam',name:'Kokokam',hotPrice:2.50,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'ular',name:'Ular',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'somboi',name:'Somboi',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'honey-lemon',name:'Honey Lemon',hotPrice:4.00,coldPrice:4.50,hasHot:true,hasCold:true},
+    {id:'fresh-soya',name:'Fresh Soya',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'lo-han-goh',name:'Lo Han Goh',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kacang-hijau',name:'Kacang Hijau',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'barley-drink',name:'Barley',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'3-masam',name:'3 Masam',hotPrice:4.00,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'guava-juice',name:'Guava Juice',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'sour-plum',name:'Sour Plum Juice',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'pulpy-orange',name:'Pulpy Orange',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'kedondong',name:'Kedondong',coldPrice:5.00,hasHot:false,hasCold:true},
+    {id:'sugar-cane',name:'Sugar Cane',coldPrice:5.00,hasHot:false,hasCold:true},
+  ]},
+  {cat:'Bottled',catZh:'罐装',items:[
+    {id:'air-kosong',name:'Air Kosong',coldPrice:0.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'water-s',name:'Drinking Water (S)',coldPrice:1.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'water-l',name:'Drinking Water (L)',coldPrice:2.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cool-water',name:'Cool Drinking Water',coldPrice:2.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cola',name:'Cola',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cola-zero',name:'Cola Zero',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'100plus',name:'100 Plus',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'fn',name:'F&N',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'fanta',name:'Fanta',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'sprite',name:'Sprite',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cincau-bot',name:'Cincau',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'just-tea',name:'Just Tea',coldPrice:3.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'aw',name:'A&W',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+  ]},
+  {cat:'Add On',isAddon:true,items:[
+    {id:'addon-kaw',name:'Kaw',price:0.50},
+    {id:'addon-lemon',name:'Lemon',price:0.50},
+    {id:'addon-susu-c',name:'Susu C',price:0.50},
+    {id:'addon-besar',name:'Besar',price:0.50},
+    {id:'addon-barley',name:'Barley',price:0.50},
+    {id:'addon-cincau',name:'Cin Cau',price:1.00},
+    {id:'addon-limau',name:'Limau',price:0.50},
+  ]},
+];
+
+// ── STATE ──
+var liveOrders={},tkOrders={},historyData={};
+var quickNotes=["少糖","少冰","无糖","打包","热饮去冰","走","少甜","Kurang Manis","Kurang Ais"];
+var currentMenu=JSON.parse(JSON.stringify(DEFAULT_MENU));
+var tkMenu=[];
+var settings={sound:true,timeout:10};
+var selectedDay=todayKey();
+var currentDayTab='active';
+var knownFingerprints=new Set();
+var audioCtx=null;
+var sidebarOpen=true;
+var archivedVisible=false;
+
+// ── FIREBASE ──
+db.ref('orders').on('value',snap=>{
+  var newOrders=snap.val()||{};
+  if(settings.sound){
+    Object.keys(newOrders).forEach(k=>{
+      var o=newOrders[k];
+      var fp=k+(o.time||'')+(o.orderMode||'');
+      if(!knownFingerprints.has(fp)){if(knownFingerprints.size>0)playBeep();knownFingerprints.add(fp);}
+    });
+  }
+  liveOrders=newOrders;
+  updateTopStats();
+  if(selectedDay===todayKey()&&document.getElementById('pc-day').classList.contains('active')) renderDay();
+});
+db.ref('tkOrders').on('value',snap=>{
+  tkOrders=snap.val()||{};
+  if(selectedDay===todayKey()&&currentDayTab==='tk') renderDay();
+});
+db.ref('history').on('value',snap=>{historyData=snap.val()||{};buildSidebar();});
+db.ref('settings/quickNotes').on('value',snap=>{if(snap.val())quickNotes=snap.val();renderQNotes();});
+db.ref('settings/sound').on('value',snap=>{settings.sound=snap.val()!==false;var el=document.getElementById('set-sound');if(el)el.checked=settings.sound;});
+db.ref('settings/timeout').on('value',snap=>{settings.timeout=snap.val()||10;var el=document.getElementById('set-timeout');if(el)el.value=settings.timeout;});
+db.ref('menu').on('value',snap=>{if(snap.val())currentMenu=snap.val();if(document.getElementById('pc-menu').classList.contains('active'))renderMenuEditor();});
+db.ref('tkMenu').on('value',snap=>{tkMenu=snap.val()||[];if(document.getElementById('pc-tkmenu').classList.contains('active'))renderTkMenuEditor();});
+
+function playBeep(){
+  try{
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.value=880;o.type='sine';
+    g.gain.setValueAtTime(0.4,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.6);
+    o.start();o.stop(audioCtx.currentTime+0.6);
+  }catch(e){}
+}
+
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtDate(k){var[y,m,d]=k.split('-');return y+'年'+parseInt(m)+'月'+parseInt(d)+'日';}
+function fmtShort(k){var[,m,d]=k.split('-');return parseInt(m)+'/'+parseInt(d);}
+function isTimeout(o){return !o.done&&o.submittedAt&&(Date.now()-o.submittedAt)>(settings.timeout*60*1000);}
+
+function updateTopStats(){
+  var pending=Object.values(liveOrders).filter(o=>o.items&&o.items.length&&!o.done).length;
+  document.getElementById('stat-pending').textContent=pending;
+}
+
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed',!sidebarOpen);
+}
+
+// ── SIDEBAR ──
+function buildSidebar(){
+  var today=todayKey();
+  document.getElementById('nav-today').innerHTML=`
+    <button class="nav-btn ${selectedDay===today&&document.getElementById('pc-day').classList.contains('active')?'active':''}" onclick="selectDay('${today}')">
+      <span>${fmtShort(today)}<span class="today-tag">今</span></span>
+    </button>`;
+  var days=Object.keys(historyData).filter(k=>k!==today).sort().reverse();
+  document.getElementById('nav-history').innerHTML=days.length
+    ?days.map(day=>`<button class="nav-btn ${selectedDay===day&&document.getElementById('pc-day').classList.contains('active')?'active':''}" onclick="selectDay('${day}')"><span>${fmtShort(day)}</span></button>`).join('')
+    :'<div class="no-hist">暂无历史</div>';
+}
+
+function selectDay(day){
+  selectedDay=day;
+  showPc('pc-day');
+  clearManageActive();
+  buildSidebar();
+  renderDay();
+}
+
+// ── RENDER DAY ──
+function renderDay(){
+  var today=todayKey();
+  var isToday=selectedDay===today;
+  document.getElementById('day-title').textContent=fmtDate(selectedDay)+(isToday?' (今天)':'');
+  document.getElementById('refresh-note').textContent='更新：'+new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  // Show/hide today-only tabs
+  document.getElementById('tab-active').style.display=isToday?'':'none';
+  document.getElementById('tab-archived').textContent=isToday?'已结束':'订单记录';
+  if(!isToday&&currentDayTab==='active'){currentDayTab='archived';updateTabActive();}
+
+  if(currentDayTab==='active') renderActiveOrders();
+  else if(currentDayTab==='archived') renderArchivedOrders(isToday);
+  else if(currentDayTab==='tk') renderTkOrders(isToday);
+  else renderDrinkStats(isToday);
+}
+
+function switchTab(tab){
+  currentDayTab=tab;
+  updateTabActive();
+  renderDay();
+}
+function updateTabActive(){
+  ['active','archived','tk','drinks'].forEach(t=>{
+    var el=document.getElementById('tab-'+t);
+    if(el) el.classList.toggle('active',t===currentDayTab);
+  });
+}
+
+// Active orders = live orders that are NOT cleared
+function renderActiveOrders(){
+  var entries=Object.entries(liveOrders).filter(([k,o])=>o.items&&o.items.length);
+  if(!entries.length){
+    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">🧃</div>暂无进行中的订单</div>';
+    return;
+  }
+  entries.sort((a,b)=>a[1].done===b[1].done?0:(a[1].done?1:-1));
+  document.getElementById('tab-content').innerHTML='<div class="orders-grid">'+entries.map(([k,o])=>orderCardHTML(o,true,k)).join('')+'</div>';
+}
+
+// Archived = history entries marked cleared, or history for non-today
+function renderArchivedOrders(isToday){
+  var hist=historyData[selectedDay]||{};
+  var entries=Object.entries(hist);
+  if(isToday){
+    // show only cleared entries
+    entries=entries.filter(([k,e])=>e.cleared);
+  }
+  if(!entries.length){
+    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>'+(isToday?'暂无已结束的桌位':'这天暂无记录')+'</div>';
+    return;
+  }
+  entries.sort((a,b)=>(b[1].submittedAt||0)-(a[1].submittedAt||0));
+  document.getElementById('tab-content').innerHTML='<div class="orders-grid">'+entries.map(([k,e])=>orderCardHTML(e,false,k,true)).join('')+'</div>';
+}
+
+function renderTkOrders(isToday){
+  var entries=[];
+  if(isToday){
+    entries=Object.entries(tkOrders).map(([k,o])=>([k,o]));
+  } else {
+    var hist=historyData[selectedDay]||{};
+    entries=Object.entries(hist).filter(([k,e])=>e.tableId&&e.tableId.startsWith('TK#')).map(([k,e])=>([k,e]));
+  }
+  if(!entries.length){
+    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">🛍️</div>暂无外带订单</div>';
+    return;
+  }
+  entries.sort((a,b)=>(a[1].num||0)-(b[1].num||0));
+  document.getElementById('tab-content').innerHTML='<div class="orders-grid">'+entries.map(([k,o])=>orderCardHTML(o,isToday,k,false,true)).join('')+'</div>';
+}
+
+function orderCardHTML(o,isToday,key,isArchived,isTk){
+  var isDone=o.done;
+  var timedOut=isToday&&!isArchived&&isTimeout(o)&&!isDone;
+  var tableLabel=isTk?('外带 #'+(o.num||'')):(o.tableId||key);
+  var cls='order-card'+(isDone?' done':timedOut?' timeout':isArchived?' archived':'');
+
+  var itemsHtml='';
+  // show completed items (append mode)
+  if(o.completedItems&&o.completedItems.length){
+    itemsHtml+=`<div class="oc-section-label done-lbl">✓ 已完成</div>`;
+    o.completedItems.forEach(it=>{
+      itemsHtml+=`<div class="oc-item completed-prev">
+        <span class="oc-item-name">${it.name}</span>
+        ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?'热':'冰'}</span>`:''}
+        <span class="oc-item-qty">×${it.qty}</span>
+      </div>`;
+    });
+    itemsHtml+=`<div class="oc-section-label new">↓ 新追加</div>`;
+  }
+  (o.items||[]).forEach(it=>{
+    itemsHtml+=`<div class="oc-item">
+      <span class="oc-item-name">${it.name}</span>
+      ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?'热':'冰'}</span>`:''}
+      <span class="oc-item-qty">×${it.qty}</span>
+    </div>`;
+  });
+
+  var addonNames=[];
+  if(o.addons){
+    var addonCat=currentMenu.find(c=>c.isAddon||c.cat==='Add On');
+    if(addonCat) addonCat.items.forEach(a=>{if(o.addons[a.id])addonNames.push(a.name);});
+  }
+
+  var actions='';
+  if(isToday&&!isArchived){
+    if(isDone) actions+=`<button class="btn-sm" onclick="markOrder('${key}',false,${!!isTk})">撤销</button>`;
+    else actions+=`<button class="btn-sm btn-green" onclick="markOrder('${key}',true,${!!isTk})">✓ 完成</button>`;
+  }
+
+  return `<div class="${cls}">
+    <div class="oc-hd">
+      <div>
+        <div class="oc-table">${tableLabel}</div>
+        <div class="oc-time">${o.time||''}${o.orderMode==='append'?' · 追加':o.orderMode==='modify'?' · 修改':''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+        ${isTk?'<div class="badge badge-tk">外带</div>':''}
+        ${isArchived?'<div class="badge badge-archived">已结束</div>':''}
+        <div class="badge ${isDone?'badge-done':timedOut?'badge-timeout':'badge-pend'}">${isDone?'完成':timedOut?'超时':'待做'}</div>
+      </div>
+    </div>
+    ${timedOut?`<div class="timeout-lbl">⚠ 超过${settings.timeout}分钟</div>`:''}
+    <div class="oc-items">${itemsHtml}</div>
+    ${addonNames.length?`<div class="oc-addons">+ ${addonNames.join('，')}</div>`:''}
+    ${o.notesDisplay?`<div class="oc-note">📝 ${o.notesDisplay}</div>`:''}
+    <div class="oc-footer">
+      <div style="font-size:13px;font-weight:600;color:var(--accent)">RM ${(o.total||0).toFixed(2)}</div>
+      <div class="oc-actions">${actions}</div>
+    </div>
+  </div>`;
+}
+
+function markOrder(key,done,isTk){
+  if(isTk) db.ref('tkOrders/'+key+'/done').set(done);
+  else db.ref('orders/'+key+'/done').set(done);
+}
+
+function renderDrinkStats(isToday){
+  var hist=historyData[selectedDay]||{};
+  var allEntries=[...Object.values(hist)];
+  if(isToday){
+    // merge live orders too
+    Object.values(liveOrders).forEach(o=>{if(o.items)allEntries.push(o);});
+    Object.values(tkOrders).forEach(o=>{if(o.items)allEntries.push(o);});
+  }
+  var totals={};
+  allEntries.forEach(e=>(e.items||[]).forEach(it=>{
+    var key=it.name+(it.temp||'');
+    if(!totals[key]) totals[key]={name:it.name,temp:it.temp,qty:0,rev:0};
+    totals[key].qty+=it.qty;totals[key].rev+=(it.price||0)*it.qty;
+  }));
+  var sorted=Object.values(totals).sort((a,b)=>b.qty-a.qty);
+  var maxQty=sorted[0]?.qty||1;
+  if(!sorted.length){document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>暂无数据</div>';return;}
+  document.getElementById('tab-content').innerHTML='<div class="ds-grid">'+sorted.map(d=>`
+    <div class="ds-row">
+      <div class="ds-info">
+        <div class="ds-name">${d.name}${d.temp?' · '+(d.temp==='hot'?'热':'冰'):''}</div>
+        <div class="ds-sub">${d.qty} 杯 · RM ${d.rev.toFixed(2)}</div>
+      </div>
+      <div class="ds-bar-wrap"><div class="ds-bar" style="width:${Math.round(d.qty/maxQty*100)}%"></div></div>
+    </div>`).join('')+'</div>';
+}
+
+// ── CLEAR DAY ──
+function confirmClearDay(){
+  var isToday=selectedDay===todayKey();
+  showModal('清空 '+fmtDate(selectedDay)+'？',isToday?'将清除今天所有记录。':'将删除该日历史账单。',()=>{
+    db.ref('history/'+selectedDay).remove();
+    if(isToday){db.ref('orders').remove();db.ref('tkOrders').remove();db.ref('settings/tkCounter').set(0);}
+    selectedDay=todayKey();renderDay();
+  });
+}
+
+// ── MANAGE PAGES ──
+function showManage(page){
+  clearManageActive();
+  document.getElementById('nav-'+page).classList.add('active');
+  showPc('pc-'+page);
+  if(page==='menu') renderMenuEditor();
+  if(page==='tkmenu') renderTkMenuEditor();
+  if(page==='notes') renderQNotes();
+}
+function clearManageActive(){['menu','tkmenu','notes','settings','print'].forEach(p=>{var el=document.getElementById('nav-'+p);if(el)el.classList.remove('active');});}
+function showPc(id){document.querySelectorAll('.pc').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ── MENU EDITOR (dine-in) ──
+function renderMenuEditor(){
+  var menu=currentMenu;
+  document.getElementById('menu-editor').innerHTML=menu.map((cat,ci)=>{
+    var isAddon=cat.isAddon||cat.cat==='Add On';
+    return `<div class="menu-cat-block">
+      <div class="menu-cat-hd" onclick="toggleCat('mc-${ci}')">
+        <span>${cat.catZh||cat.cat}</span><span style="font-size:11px;color:var(--text3)">${cat.items.length}项 ▾</span>
+      </div>
+      <div class="menu-cat-body" id="mc-${ci}">
+        ${cat.items.map((item,ii)=>`<div class="mi-row">
+          <span class="mi-name">${item.name}</span>
+          <div class="mi-prices">
+            ${isAddon?`<div class="pf">RM<input class="pi" type="number" step="0.5" value="${(item.price||0).toFixed(2)}" onchange="updMenuPrice(${ci},${ii},'price',this.value)"></div>`:''}
+            ${!isAddon&&item.hasHot?`<div class="pf">热RM<input class="pi" type="number" step="0.5" value="${(item.hotPrice||0).toFixed(2)}" onchange="updMenuPrice(${ci},${ii},'hotPrice',this.value)"></div>`:''}
+            ${!isAddon&&item.hasCold?`<div class="pf">冷RM<input class="pi" type="number" step="0.5" value="${(item.coldPrice||0).toFixed(2)}" onchange="updMenuPrice(${ci},${ii},'coldPrice',this.value)"></div>`:''}
+          </div>
+          <button class="del-btn" onclick="delMenuItem(${ci},${ii})">×</button>
+        </div>`).join('')}
+        <div class="add-row">
+          <input class="add-in" placeholder="名称" id="mn-${ci}">
+          ${isAddon?`<input class="add-in" placeholder="价格" style="width:60px" id="mp-${ci}" type="number" step="0.5">`:`<input class="add-in" placeholder="热价" style="width:55px" id="mh-${ci}" type="number" step="0.5"><input class="add-in" placeholder="冷价" style="width:55px" id="mc2-${ci}" type="number" step="0.5">`}
+          <button class="add-btn" onclick="${isAddon?`addAddonItem(${ci})`:`addDrinkItem(${ci})`}">添加</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCat(id){var el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'':'none';}
+function updMenuPrice(ci,ii,field,val){currentMenu[ci].items[ii][field]=parseFloat(val)||0;db.ref('menu').set(currentMenu);}
+function delMenuItem(ci,ii){currentMenu[ci].items.splice(ii,1);db.ref('menu').set(currentMenu);renderMenuEditor();}
+function addDrinkItem(ci){
+  var n=document.getElementById('mn-'+ci).value.trim();
+  var h=parseFloat(document.getElementById('mh-'+ci).value)||null;
+  var c=parseFloat(document.getElementById('mc2-'+ci).value)||null;
+  if(!n) return;
+  currentMenu[ci].items.push({id:n.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now(),name:n,hotPrice:h,coldPrice:c,hasHot:!!h,hasCold:!!c});
+  db.ref('menu').set(currentMenu);renderMenuEditor();
+}
+function addAddonItem(ci){
+  var n=document.getElementById('mn-'+ci).value.trim();
+  var p=parseFloat(document.getElementById('mp-'+ci).value)||0;
+  if(!n) return;
+  currentMenu[ci].items.push({id:'addon-'+Date.now(),name:n,price:p});
+  db.ref('menu').set(currentMenu);renderMenuEditor();
+}
+function resetMenu(type){showModal('恢复默认菜单？','将清除所有自定义修改。',()=>{currentMenu=JSON.parse(JSON.stringify(DEFAULT_MENU));db.ref('menu').remove();renderMenuEditor();});}
+
+// ── TK MENU EDITOR ──
+function renderTkMenuEditor(){
+  var menu=tkMenu;
+  if(!menu.length){
+    document.getElementById('tkmenu-editor').innerHTML=`<div class="empty-state"><div class="empty-icon">🛍️</div>外带菜单为空，点「添加分类」开始</div>`;
+    return;
+  }
+  document.getElementById('tkmenu-editor').innerHTML=menu.map((cat,ci)=>`
+    <div class="menu-cat-block">
+      <div class="menu-cat-hd" onclick="toggleCat('tc-${ci}')">
+        <span>${cat.cat}</span>
+        <span style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:var(--text3)">${cat.items.length}项</span>
+          <button class="del-btn" onclick="event.stopPropagation();delTkCat(${ci})">×</button>
+        </span>
+      </div>
+      <div class="menu-cat-body" id="tc-${ci}">
+        ${cat.items.map((item,ii)=>`<div class="mi-row">
+          <span class="mi-name">${item.name}</span>
+          <div class="mi-prices">
+            ${item.hasHot?`<div class="pf">热RM<input class="pi" type="number" step="0.5" value="${(item.hotPrice||0).toFixed(2)}" onchange="updTkPrice(${ci},${ii},'hotPrice',this.value)"></div>`:''}
+            ${item.hasCold?`<div class="pf">冷RM<input class="pi" type="number" step="0.5" value="${(item.coldPrice||0).toFixed(2)}" onchange="updTkPrice(${ci},${ii},'coldPrice',this.value)"></div>`:''}
+          </div>
+          <button class="del-btn" onclick="delTkItem(${ci},${ii})">×</button>
+        </div>`).join('')}
+        <div class="add-row">
+          <input class="add-in" placeholder="名称" id="tn-${ci}">
+          <input class="add-in" placeholder="热价" style="width:55px" id="th-${ci}" type="number" step="0.5">
+          <input class="add-in" placeholder="冷价" style="width:55px" id="tc2-${ci}" type="number" step="0.5">
+          <button class="add-btn" onclick="addTkItem(${ci})">添加</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function addTkCat(){
+  var name=prompt('新分类名称：');
+  if(!name) return;
+  tkMenu.push({cat:name,items:[]});
+  db.ref('tkMenu').set(tkMenu);
+}
+function delTkCat(ci){tkMenu.splice(ci,1);db.ref('tkMenu').set(tkMenu);renderTkMenuEditor();}
+function updTkPrice(ci,ii,field,val){tkMenu[ci].items[ii][field]=parseFloat(val)||0;db.ref('tkMenu').set(tkMenu);}
+function delTkItem(ci,ii){tkMenu[ci].items.splice(ii,1);db.ref('tkMenu').set(tkMenu);renderTkMenuEditor();}
+function addTkItem(ci){
+  var n=document.getElementById('tn-'+ci).value.trim();
+  var h=parseFloat(document.getElementById('th-'+ci).value)||null;
+  var c=parseFloat(document.getElementById('tc2-'+ci).value)||null;
+  if(!n) return;
+  tkMenu[ci].items.push({id:n.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now(),name:n,hotPrice:h,coldPrice:c,hasHot:!!h,hasCold:!!c});
+  db.ref('tkMenu').set(tkMenu);renderTkMenuEditor();
+}
+
+// ── QUICK NOTES ──
+function renderQNotes(){
+  document.getElementById('qnotes-wrap').innerHTML=quickNotes.map((n,i)=>`
+    <div class="qn-chip"><span>${n}</span><button class="qn-del" onclick="delQNote(${i})">×</button></div>`).join('');
+}
+function addQNote(){var v=document.getElementById('qn-input').value.trim();if(!v)return;quickNotes.push(v);db.ref('settings/quickNotes').set(quickNotes);document.getElementById('qn-input').value='';}
+function delQNote(i){quickNotes.splice(i,1);db.ref('settings/quickNotes').set(quickNotes);}
+
+// ── SETTINGS ──
+function saveSetting(key,val){settings[key]=val;db.ref('settings/'+key).set(val);}
+
+// ── MODAL ──
+var modalCb=null;
+function showModal(title,body,cb){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=body;
+  modalCb=cb;
+  document.getElementById('modal-ok').onclick=()=>{modalCb&&modalCb();closeModal();};
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show');}
+
+function refresh(){updateTopStats();buildSidebar();if(document.getElementById('pc-day').classList.contains('active'))renderDay();}
+
+// ── INIT ──
+selectDay(todayKey());
+setInterval(()=>{if(selectedDay===todayKey()&&document.getElementById('pc-day').classList.contains('active'))renderDay();},8000);
+</script>
+</body>
+</html>

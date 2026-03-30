@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>新福州素食园 — 点单</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#F5F3EF;--surface:#FFFFFF;--surface2:#EDE9E3;--surface3:#E2DDD6;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:#1C1917;--text2:#6B6460;--text3:#A09895;
+  --accent:#B85C1A;--accent-dk:#93470F;--accent-lt:#FDF1E8;
+  --green:#237A4B;--green-lt:#E6F4EE;--green-bd:#237A4B;
+  --amber:#8A6000;--amber-lt:#FFF8E6;
+  --red:#C0302A;--red-lt:#FFF0EF;
+  --blue:#1A5FAA;--blue-lt:#EAF2FF;
+  --r:12px;--rsm:8px;
+}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.brand-zh{font-size:15px;font-weight:600;}
+.brand-en{font-size:10px;color:var(--text3);margin-top:1px;}
+.topbar-right{display:flex;gap:6px;align-items:center;}
+.tbtn{padding:5px 10px;border:1px solid var(--border2);border-radius:14px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;}
+.tbtn:hover{background:var(--surface2);}
+
+/* PAGES */
+.page{display:none;}.page.active{display:block;}
+
+/* ZONE TABS */
+.zone-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);}
+.zone-tab{flex:1;padding:10px 4px;font-size:13px;font-weight:500;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2.5px solid transparent;font-family:inherit;transition:all 0.15s;}
+.zone-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* TABLE LAYOUT — fixed floor plan */
+.tables-wrap{padding:12px;}
+.area-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin:12px 0 7px;}
+.area-label:first-child{margin-top:0;}
+
+/* Floor plan grid for A zone */
+.floor-a-outdoor{display:flex;gap:8px;margin-bottom:4px;}
+.floor-a-indoor{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+/* Floor plan for B zone */
+.floor-b-outdoor{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:4px;}
+.floor-b-indoor{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+
+/* Table cards */
+.table-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:10px 8px 9px;position:relative;user-select:none;min-width:0;}
+.table-card.round{border-radius:50px;}
+.table-card.occupied{border-color:#C09060;background:#FFFBF5;}
+.table-card.occupied-ordered{border-color:var(--green-bd);background:var(--green-lt);}
+.table-card.empty{opacity:0.5;}
+.tnum{font-size:15px;font-weight:600;margin-bottom:2px;text-align:center;}
+.tocc{font-size:9px;font-weight:500;margin-bottom:1px;text-align:center;}
+.table-card.occupied .tocc{color:var(--amber);}
+.table-card.occupied-ordered .tocc{color:var(--green);}
+.table-card.empty .tocc{color:var(--text3);}
+.tdrink{font-size:9px;color:var(--text3);text-align:center;min-height:12px;}
+.table-card.occupied-ordered .tdrink{color:var(--green);}
+.cup-dot{position:absolute;top:5px;right:5px;background:var(--accent);color:#fff;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;}
+.occ-row{display:flex;margin-top:6px;border:1px solid var(--border2);border-radius:10px;overflow:hidden;}
+.occ-row button{flex:1;padding:3px 0;font-size:9px;font-family:inherit;border:none;background:none;color:var(--text3);cursor:pointer;}
+.occ-row button.a-occ{background:var(--amber);color:#fff;font-weight:600;}
+.occ-row button.a-emp{background:var(--surface2);color:var(--text2);font-weight:500;}
+.order-btn{display:block;width:100%;margin-top:5px;padding:4px 0;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;font-family:inherit;cursor:pointer;}
+.order-btn.modify{background:none;color:var(--green);border:1.5px solid var(--green);}
+.order-btn.append{background:none;color:var(--blue);border:1.5px solid var(--blue);}
+.clear-btn{display:block;width:100%;margin-top:3px;padding:3px 0;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;font-size:9px;font-family:inherit;cursor:pointer;}
+
+/* outdoor toggle */
+.outdoor-toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--rsm);padding:9px 12px;margin-bottom:8px;border:1px solid var(--border);}
+.outdoor-toggle-label{font-size:12px;color:var(--text2);}
+.tog{position:relative;width:38px;height:22px;cursor:pointer;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-track{position:absolute;inset:0;background:var(--surface3);border-radius:11px;transition:background 0.2s;}
+.tog input:checked+.tog-track{background:var(--green);}
+.tog-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.tog input:checked~.tog-thumb{transform:translateX(16px);}
+
+/* TAKEAWAY */
+.tk-wrap{padding:14px;}
+.tk-info{background:var(--accent-lt);border:1px solid rgba(184,92,26,0.2);border-radius:var(--rsm);padding:10px 13px;font-size:12px;color:var(--accent);margin-bottom:12px;}
+.tk-orders{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.tk-order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
+.tk-order-info{font-size:13px;font-weight:500;}
+.tk-order-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.tk-order-done{font-size:11px;color:var(--green);font-weight:500;}
+.new-tk-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
+
+/* ORDER PAGE — sticky bottom bar */
+.order-page{display:flex;flex-direction:column;height:calc(100vh - 57px - 43px);position:relative;}
+.order-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.back-btn{padding:5px 11px;border:1px solid var(--border2);border-radius:13px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.order-title{font-size:15px;font-weight:600;}
+.order-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* completed items banner (append mode) */
+.completed-banner{background:#F0F9F4;border-bottom:1px solid rgba(35,122,75,0.2);padding:10px 14px;}
+.completed-banner-title{font-size:10px;font-weight:600;color:var(--green);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+.completed-item-row{display:flex;align-items:center;gap:6px;padding:3px 0;opacity:0.7;}
+.completed-item-name{flex:1;font-size:12px;color:var(--text2);text-decoration:line-through;}
+.completed-item-temp{font-size:10px;color:var(--text3);}
+.completed-item-qty{font-size:12px;font-weight:500;color:var(--text2);}
+
+.drinks-scroll{flex:1;overflow-y:auto;padding:11px 13px;padding-bottom:4px;}
+.cat-hd{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.7px;text-transform:uppercase;margin:13px 0 6px;}
+.cat-hd:first-child{margin-top:0;}
+.drink-item{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:9px 11px;margin-bottom:5px;gap:9px;}
+.drink-item.in-cart{border-color:var(--green-bd);background:var(--green-lt);}
+.drink-name-col{flex:1;min-width:0;}
+.drink-name{font-size:13px;font-weight:500;}
+.drink-price-hint{font-size:11px;color:var(--text3);margin-top:1px;}
+.drink-controls{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.qty-row{display:flex;align-items:center;gap:6px;}
+.qty-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+.qty-btn.plus{background:var(--accent);color:#fff;border-color:var(--accent);}
+.qty-num{min-width:16px;text-align:center;font-size:14px;font-weight:600;}
+.temp-pair{display:flex;gap:4px;align-items:center;}
+.temp-label{font-size:10px;color:var(--text3);}
+
+/* ADDON */
+.addon-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;margin-bottom:8px;}
+.addon-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.addon-chip{padding:4px 10px;border:1px solid var(--border2);border-radius:12px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px;}
+.addon-chip.active{background:var(--accent-lt);color:var(--accent);border-color:var(--accent);font-weight:500;}
+.addon-price{font-size:10px;color:var(--text3);}
+.addon-chip.active .addon-price{color:var(--accent);}
+
+/* NOTES */
+.notes-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;margin-bottom:10px;}
+.notes-hd{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin-bottom:7px;}
+.quick-notes{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+.qnote-chip{padding:4px 10px;border:1px solid var(--border2);border-radius:12px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;}
+.qnote-chip.active{background:var(--blue-lt);color:var(--blue);border-color:var(--blue);font-weight:500;}
+.custom-note{width:100%;border:1px solid var(--border);border-radius:var(--rsm);padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);resize:none;outline:none;}
+.custom-note:focus{border-color:var(--accent);}
+
+/* CART BAR — sticky bottom */
+.cart-bar{background:var(--surface);border-top:1px solid var(--border);padding:10px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cart-total-amt{font-size:17px;font-weight:600;}
+.cart-cup-ct{font-size:11px;color:var(--text3);margin-top:1px;}
+.submit-btn{padding:11px 18px;background:var(--accent);color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.submit-btn:disabled{background:var(--text3);cursor:not-allowed;}
+
+/* CONFIRM SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:flex-end;justify-content:center;}
+.overlay.show{display:flex;}
+.confirm-sheet{background:var(--surface);border-radius:18px 18px 0 0;padding:18px 15px 28px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;}
+.sheet-title{font-size:15px;font-weight:600;margin-bottom:3px;}
+.sheet-sub{font-size:12px;color:var(--text3);margin-bottom:14px;}
+.confirm-item-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.confirm-item-row:last-of-type{border-bottom:none;}
+.confirm-item-price{font-weight:600;color:var(--accent);}
+.confirm-item-meta{font-size:11px;color:var(--text3);margin-top:1px;}
+.confirm-total-row{display:flex;justify-content:space-between;padding:10px 0 0;font-size:15px;font-weight:600;border-top:1.5px solid var(--border2);margin-top:4px;}
+.sheet-btns{display:flex;gap:9px;margin-top:14px;}
+.sheet-btn-cancel{flex:1;padding:11px;border:1px solid var(--border2);border-radius:13px;background:none;color:var(--text2);font-size:14px;font-family:inherit;cursor:pointer;}
+.sheet-btn-confirm{flex:2;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:13px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1C1917;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="brand-zh">新福州素食园</div>
+    <div class="brand-en">New Foochow Vegetarian</div>
+  </div>
+  <div class="topbar-right">
+    <button class="tbtn" id="lang-btn" onclick="cycleLang()">EN</button>
+    <button class="tbtn" onclick="window.open('kitchen.html','_blank')" id="btn-kitchen">后台</button>
+  </div>
+</div>
+
+<div class="zone-tabs">
+  <button class="zone-tab active" onclick="switchZone('A')" id="ztab-A">A区</button>
+  <button class="zone-tab" onclick="switchZone('B')" id="ztab-B">B区</button>
+  <button class="zone-tab" onclick="switchZone('TK')" id="ztab-TK">外带</button>
+</div>
+
+<div class="page active" id="page-tables">
+  <div class="tables-wrap" id="tables-wrap"></div>
+</div>
+
+<div class="page" id="page-order">
+  <div class="order-page" id="order-page-inner">
+    <div class="order-topbar">
+      <button class="back-btn" onclick="goBack()">← <span id="lbl-back">返回</span></button>
+      <div>
+        <div class="order-title" id="order-title"></div>
+        <div class="order-sub" id="order-sub"></div>
+      </div>
+    </div>
+    <!-- completed items shown in append mode -->
+    <div id="completed-banner" style="display:none"></div>
+    <div class="drinks-scroll" id="drinks-scroll"></div>
+    <div class="cart-bar">
+      <div style="flex:1">
+        <div class="cart-total-amt" id="cart-total">RM 0.00</div>
+        <div class="cart-cup-ct" id="cart-cups"></div>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="showConfirm()" disabled>确认下单</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="hideConfirm(event)">
+  <div class="confirm-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="sheet-title">确认订单</div>
+    <div class="sheet-sub" id="sheet-sub"></div>
+    <div id="confirm-items"></div>
+    <div class="confirm-total-row" id="confirm-total-row">
+      <span id="lbl-total">合计</span>
+      <span id="confirm-total-amt">RM 0.00</span>
+    </div>
+    <div class="sheet-btns">
+      <button class="sheet-btn-cancel" onclick="hideConfirm()" id="lbl-cancel">取消</button>
+      <button class="sheet-btn-confirm" onclick="doSubmit()" id="lbl-place">提交订单</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyA6u8YxJxx5ZPqCdMbzEHuuREUpJs9yFgE",
+  authDomain:"new-foochow-vegetarian-da965.firebaseapp.com",
+  databaseURL:"https://new-foochow-vegetarian-da965-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"new-foochow-vegetarian-da965",
+  storageBucket:"new-foochow-vegetarian-da965.firebasestorage.app",
+  messagingSenderId:"933797712684",
+  appId:"1:933797712684:web:410ca8bf84d3743397d289"
+});
+var db = firebase.database();
+
+// ── LANG ──
+var LANGS = ['zh','en','id'];
+var langIdx = 0;
+var L = {
+  zh:{ back:'返回', kitchen:'后台', 'zone-A':'A区','zone-B':'B区','zone-TK':'外带',
+       occupied:'有人', empty:'空桌', 'not-ordered':'未点', indoor:'室内', outdoor:'室外',
+       hot:'热', cold:'冰', 'order-drinks':'点饮料', modify:'修改', append:'追加',
+       'clear-table':'清台', confirm:'确认', cancel:'取消', 'place-order':'提交订单',
+       total:'合计', 'no-drinks':'未选择饮料', cups:'杯', 'outdoor-b':'B区室外 (B16-B20)',
+       'tk-info':'外带单独下单，每单独立显示',
+       'new-tk':'+ 新外带订单', 'completed-items':'已完成项目（不会重复制作）',
+       'new-items':'新追加项目', submit:'确认下单', 'confirm-clear':'确认清台？',
+       'confirm-clear-body':'此桌订单将移至已结束，不可撤销。',
+       'addon-section':'Add On 附加', notes:'备注', 'other-notes':'其他备注...' },
+  en:{ back:'Back', kitchen:'Kitchen', 'zone-A':'Zone A','zone-B':'Zone B','zone-TK':'Takeaway',
+       occupied:'Occupied', empty:'Empty', 'not-ordered':'No drinks', indoor:'Indoor', outdoor:'Outdoor',
+       hot:'Hot', cold:'Iced', 'order-drinks':'Order', modify:'Modify', append:'Add More',
+       'clear-table':'Clear', confirm:'Confirm', cancel:'Cancel', 'place-order':'Place Order',
+       total:'Total', 'no-drinks':'No drinks selected', cups:'cups', 'outdoor-b':'Zone B Outdoor (B16-B20)',
+       'tk-info':'Each takeaway order is separate',
+       'new-tk':'+ New Takeaway Order', 'completed-items':'Completed (will not be remade)',
+       'new-items':'New items', submit:'Review Order', 'confirm-clear':'Clear table?',
+       'confirm-clear-body':'This will archive orders for this table.',
+       'addon-section':'Add On', notes:'Notes', 'other-notes':'Other notes...' },
+  id:{ back:'Kembali', kitchen:'Dapur', 'zone-A':'Area A','zone-B':'Area B','zone-TK':'Bawa Pulang',
+       occupied:'Ada Tamu', empty:'Kosong', 'not-ordered':'Belum Pesan', indoor:'Dalam', outdoor:'Luar',
+       hot:'Panas', cold:'Dingin', 'order-drinks':'Pesan', modify:'Ubah', append:'Tambah',
+       'clear-table':'Bersihkan', confirm:'Konfirmasi', cancel:'Batal', 'place-order':'Kirim Pesanan',
+       total:'Total', 'no-drinks':'Belum pilih minuman', cups:'gelas', 'outdoor-b':'Area B Luar (B16-B20)',
+       'tk-info':'Setiap pesanan bawa pulang terpisah',
+       'new-tk':'+ Pesanan Baru', 'completed-items':'Sudah selesai (tidak dibuat ulang)',
+       'new-items':'Item baru', submit:'Periksa Pesanan', 'confirm-clear':'Bersihkan meja?',
+       'confirm-clear-body':'Pesanan meja ini akan diarsipkan.',
+       'addon-section':'Tambahan', notes:'Catatan', 'other-notes':'Catatan lain...' },
+};
+function t(k){ return (L[LANGS[langIdx]]||L.zh)[k]||k; }
+function cycleLang(){
+  langIdx=(langIdx+1)%LANGS.length;
+  var labels=['EN','ID','中'];
+  document.getElementById('lang-btn').textContent=labels[langIdx];
+  applyLang();
+  renderTablesZone(currentZone);
+}
+function applyLang(){
+  document.getElementById('lbl-back').textContent=t('back');
+  document.getElementById('btn-kitchen').textContent=t('kitchen');
+  document.getElementById('lbl-total').textContent=t('total');
+  document.getElementById('lbl-cancel').textContent=t('cancel');
+  document.getElementById('lbl-place').textContent=t('place-order');
+  document.getElementById('submit-btn').textContent=t('submit');
+  ['A','B','TK'].forEach(z=>{ var el=document.getElementById('ztab-'+z); if(el) el.textContent=t('zone-'+z); });
+}
+
+// ── DEFAULT MENUS ──
+var DEFAULT_MENU = [
+  {cat:'Coffee',catZh:'咖啡',items:[
+    {id:'kopi-o',name:'Kopi O',hotPrice:2.00,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'kopi',name:'Kopi',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kopi-c',name:'Kopi C',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kopi-tarik',name:'Kopi Tarik',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'nescafe-o',name:'Nescafe O',hotPrice:2.50,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'nescafe',name:'Nescafe',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'neslo',name:'Neslo',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Tea',catZh:'茶',items:[
+    {id:'teh-o',name:'Teh O',hotPrice:2.00,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'teh',name:'Teh',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'teh-tarik',name:'Teh Tarik',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'teh-c',name:'Teh C',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'lemon-tea',name:'Lemon Tea',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'chinese-tea',name:'Chinese Tea',hotPrice:2.00,coldPrice:2.00,hasHot:true,hasCold:true},
+    {id:'teh-misai',name:'Teh Misai Kuching',hotPrice:2.50,coldPrice:2.50,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Milo / Susu',items:[
+    {id:'milo-o',name:'Milo O',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'milo-c',name:'Milo C',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'milo',name:'Milo',hotPrice:3.50,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'susu',name:'Susu',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'susu-c',name:'Susu C',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+  ]},
+  {cat:'Drinks',catZh:'饮料',items:[
+    {id:'fresh-limau',name:'Fresh Limau',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'fresh-lemon',name:'Fresh Lemon',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'kokokam',name:'Kokokam',hotPrice:2.50,coldPrice:2.50,hasHot:true,hasCold:true},
+    {id:'ular',name:'Ular',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'somboi',name:'Somboi',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'honey-lemon',name:'Honey Lemon',hotPrice:4.00,coldPrice:4.50,hasHot:true,hasCold:true},
+    {id:'fresh-soya',name:'Fresh Soya',hotPrice:3.00,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'lo-han-goh',name:'Lo Han Goh',hotPrice:3.00,coldPrice:3.50,hasHot:true,hasCold:true},
+    {id:'kacang-hijau',name:'Kacang Hijau',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'barley-drink',name:'Barley',hotPrice:2.50,coldPrice:3.00,hasHot:true,hasCold:true},
+    {id:'3-masam',name:'3 Masam',hotPrice:4.00,coldPrice:4.00,hasHot:true,hasCold:true},
+    {id:'guava-juice',name:'Guava Juice',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'sour-plum',name:'Sour Plum Juice',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'pulpy-orange',name:'Pulpy Orange',coldPrice:3.50,hasHot:false,hasCold:true},
+    {id:'kedondong',name:'Kedondong',coldPrice:5.00,hasHot:false,hasCold:true},
+    {id:'sugar-cane',name:'Sugar Cane',coldPrice:5.00,hasHot:false,hasCold:true},
+  ]},
+  {cat:'Bottled',catZh:'罐装',items:[
+    {id:'air-kosong',name:'Air Kosong',coldPrice:0.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'water-s',name:'Drinking Water (S)',coldPrice:1.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'water-l',name:'Drinking Water (L)',coldPrice:2.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cool-water',name:'Cool Drinking Water',coldPrice:2.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cola',name:'Cola',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cola-zero',name:'Cola Zero',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'100plus',name:'100 Plus',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'fn',name:'F&N',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'fanta',name:'Fanta',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'sprite',name:'Sprite',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'cincau-bot',name:'Cincau',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'just-tea',name:'Just Tea',coldPrice:3.50,hasHot:false,hasCold:true,coldOnly:true},
+    {id:'aw',name:'A&W',coldPrice:3.00,hasHot:false,hasCold:true,coldOnly:true},
+  ]},
+  {cat:'Add On',isAddon:true,items:[
+    {id:'addon-kaw',name:'Kaw',price:0.50},
+    {id:'addon-lemon',name:'Lemon',price:0.50},
+    {id:'addon-susu-c',name:'Susu C',price:0.50},
+    {id:'addon-besar',name:'Besar',price:0.50},
+    {id:'addon-barley',name:'Barley',price:0.50},
+    {id:'addon-cincau',name:'Cin Cau',price:1.00},
+    {id:'addon-limau',name:'Limau',price:0.50},
+  ]},
+];
+var DEFAULT_TK_MENU = []; // empty by default, managed from kitchen
+var DEFAULT_QUICK_NOTES = ['少糖','少冰','无糖','打包','热饮去冰','走','少甜','Kurang Manis','Kurang Ais'];
+
+// ── TABLE LAYOUT ──
+var TABLE_LAYOUT = {
+  A:{
+    indoor:[
+      // row 1
+      [{id:'A1',round:false},{id:'A2',round:false},{id:null}],
+      // row 2
+      [{id:'A4',round:false},{id:'A5',round:false},{id:'A6',round:false}],
+      // row 3
+      [{id:'A8',round:false},{id:'A9',round:false},{id:'A10',round:false}],
+    ],
+    outdoor:[{id:'A12',round:true},{id:'A13',round:true},{id:'A14',round:true},{id:'A15',round:true}],
+    outdoorToggleable:false,
+  },
+  B:{
+    indoor:[
+      [{id:'B1',round:false},{id:'B2',round:false},{id:'B3',round:false},{id:'B4',round:false},{id:'B5',round:false}],
+      [{id:'B6',round:false},{id:'B7',round:false},{id:'B8',round:false},{id:'B9',round:false},{id:'B10',round:false}],
+      [{id:'B11',round:false},{id:'B12',round:false},{id:'B13',round:false},{id:'B14',round:false},{id:'B15',round:false}],
+    ],
+    outdoor:[{id:'B16',round:false},{id:'B17',round:false},{id:'B18',round:false},{id:'B19',round:false},{id:'B20',round:false}],
+    outdoorToggleable:true,
+  }
+};
+
+// ── STATE ──
+var currentZone='A', currentTable=null, orderMode='new';
+// orderMode: 'new' | 'modify' | 'append'
+var tableStatuses={}, liveOrders={}, tkOrders={};
+var quickNotes=[...DEFAULT_QUICK_NOTES];
+var bOutdoorVisible=false;
+var remoteMenu=null, remoteTkMenu=null;
+var cart=[], selectedAddons={}, selectedQuickNotes=[], customNote='';
+var completedItems=[]; // items already done (append mode)
+var tkCounter=0; // for numbering takeaway orders
+
+// ── FIREBASE ──
+db.ref('tableStatuses').on('value',s=>{tableStatuses=s.val()||{};refreshTables();});
+db.ref('orders').on('value',s=>{liveOrders=s.val()||{};refreshTables();});
+db.ref('tkOrders').on('value',s=>{tkOrders=s.val()||{};if(currentZone==='TK')renderTakeaway();});
+db.ref('settings/bOutdoorVisible').on('value',s=>{
+  bOutdoorVisible=!!s.val();
+  var tog=document.getElementById('outdoor-toggle');
+  if(tog) tog.checked=bOutdoorVisible;
+  if(currentZone==='B') refreshTables();
+});
+db.ref('settings/quickNotes').on('value',s=>{if(s.val()) quickNotes=s.val();});
+db.ref('menu').on('value',s=>{if(s.val()) remoteMenu=s.val();});
+db.ref('tkMenu').on('value',s=>{remoteTkMenu=s.val()||[];});
+db.ref('settings/tkCounter').on('value',s=>{tkCounter=s.val()||0;});
+
+function refreshTables(){
+  if(document.getElementById('page-tables').classList.contains('active')) renderTablesZone(currentZone);
+}
+
+// ── ZONE ──
+function switchZone(z){
+  currentZone=z;
+  ['A','B','TK'].forEach(zone=>document.getElementById('ztab-'+zone).classList.toggle('active',zone===z));
+  renderTablesZone(z);
+}
+
+function renderTablesZone(z){
+  var wrap=document.getElementById('tables-wrap');
+  if(z==='TK'){renderTakeaway();return;}
+  var zone=TABLE_LAYOUT[z];
+  var html='';
+
+  if(z==='B'&&zone.outdoorToggleable){
+    html+=`<div class="outdoor-toggle-row">
+      <span class="outdoor-toggle-label">${t('outdoor-b')}</span>
+      <label class="tog">
+        <input type="checkbox" id="outdoor-toggle" ${bOutdoorVisible?'checked':''} onchange="toggleBOutdoor(this.checked)">
+        <div class="tog-track"></div><div class="tog-thumb"></div>
+      </label>
+    </div>`;
+  }
+
+  // indoor — floor plan grid
+  html+=`<div class="area-label">${t('indoor')}</div>`;
+  html+=`<div class="floor-${z.toLowerCase()}-indoor">`;
+  zone.indoor.forEach(row=>{
+    row.forEach(cell=>{
+      if(!cell||!cell.id) html+=`<div></div>`;
+      else html+=tableCardHTML(cell.id,cell.round);
+    });
+  });
+  html+='</div>';
+
+  var showOutdoor=z!=='B'||bOutdoorVisible;
+  if(showOutdoor&&zone.outdoor.length){
+    html+=`<div class="area-label">${t('outdoor')}</div>`;
+    html+=`<div class="floor-${z.toLowerCase()}-outdoor">`;
+    zone.outdoor.forEach(cell=>{ html+=tableCardHTML(cell.id,cell.round); });
+    html+='</div>';
+  }
+  wrap.innerHTML=html;
+}
+
+function tableCardHTML(tid,round){
+  var status=tableStatuses[tid]||'empty';
+  var occupied=status==='occupied';
+  var order=liveOrders[tid];
+  var hasActive=!!(order&&order.items&&order.items.length);
+  var cups=hasActive?order.items.reduce((s,it)=>s+it.qty,0):0;
+  var isDone=hasActive&&order.done;
+
+  var cls='table-card '+(round?'round ':'');
+  if(!occupied) cls+='empty';
+  else if(hasActive) cls+='occupied-ordered';
+  else cls+='occupied';
+
+  var occLabel=occupied?t('occupied'):t('empty');
+  var drinkLabel=hasActive?(isDone?'✓ '+cups+' '+t('cups'):cups+' '+t('cups')):(occupied?t('not-ordered'):'—');
+
+  var btns='';
+  if(occupied){
+    if(hasActive&&isDone){
+      // completed — only append
+      btns+=`<button class="order-btn append" onclick="openOrder('${tid}','append')">${t('append')}</button>`;
+    } else if(hasActive){
+      // pending — can modify
+      btns+=`<button class="order-btn modify" onclick="openOrder('${tid}','modify')">${t('modify')}</button>`;
+    } else {
+      btns+=`<button class="order-btn" onclick="openOrder('${tid}','new')">${t('order-drinks')}</button>`;
+    }
+    btns+=`<button class="clear-btn" onclick="confirmClearTable('${tid}')">${t('clear-table')}</button>`;
+  }
+
+  return `<div class="${cls}">
+    ${hasActive?`<div class="cup-dot">${cups}</div>`:''}
+    <div class="tnum">${tid}</div>
+    <div class="tocc">${occLabel}</div>
+    <div class="tdrink">${drinkLabel}</div>
+    <div class="occ-row" onclick="event.stopPropagation()">
+      <button class="${occupied?'a-occ':''}" onclick="setOcc('${tid}',true)">${t('occupied')}</button>
+      <button class="${!occupied?'a-emp':''}" onclick="setOcc('${tid}',false)">${t('empty')}</button>
+    </div>
+    ${btns}
+  </div>`;
+}
+
+function setOcc(tid,val){
+  db.ref('tableStatuses/'+tid).set(val?'occupied':'empty');
+  if(!val) clearTableData(tid);
+}
+
+function clearTableData(tid){
+  // archive live order then remove
+  var order=liveOrders[tid];
+  if(order){
+    var today=todayKey();
+    // mark as cleared in history
+    db.ref('history/'+today).orderByChild('tableId').equalTo(tid).once('value',snap=>{
+      if(snap.val()){
+        var keys=Object.keys(snap.val());
+        keys.forEach(k=>db.ref('history/'+today+'/'+k+'/cleared').set(true));
+      }
+    });
+  }
+  db.ref('orders/'+tid).remove();
+}
+
+function toggleBOutdoor(val){ db.ref('settings/bOutdoorVisible').set(val); }
+
+// ── CLEAR TABLE ──
+var clearTarget=null;
+function confirmClearTable(tid){
+  clearTarget=tid;
+  showSimpleConfirm(t('confirm-clear'),t('confirm-clear-body'),()=>{
+    db.ref('tableStatuses/'+clearTarget).set('empty');
+    clearTableData(clearTarget);
+    clearTarget=null;
+  });
+}
+
+// ── TAKEAWAY ──
+function renderTakeaway(){
+  var wrap=document.getElementById('tables-wrap');
+  var orders=Object.entries(tkOrders).sort((a,b)=>a[1].num-b[1].num);
+  var ordersHtml=orders.map(([key,o])=>{
+    var cups=o.items?o.items.reduce((s,it)=>s+it.qty,0):0;
+    var isDone=o.done;
+    return `<div class="tk-order-card">
+      <div>
+        <div class="tk-order-info">${t('zone-TK')} #${o.num}</div>
+        <div class="tk-order-meta">${o.time||''} · ${cups} ${t('cups')}</div>
+      </div>
+      ${isDone
+        ?`<span class="tk-order-done">✓ Done</span>`
+        :`<button class="order-btn modify" style="width:auto;padding:5px 12px;font-size:11px" onclick="openTkOrder('${key}','modify')">${t('modify')}</button>`
+      }
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML=`<div class="tk-wrap">
+    <div class="tk-info">${t('tk-info')}</div>
+    <div class="tk-orders">${ordersHtml}</div>
+    <button class="new-tk-btn" onclick="openTkOrder(null,'new')">${t('new-tk')}</button>
+  </div>`;
+}
+
+function openTkOrder(key,mode){
+  currentTable=key?('TK:'+key):'TK:NEW';
+  orderMode=mode;
+  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[];
+
+  if(key&&mode==='modify'){
+    var o=tkOrders[key];
+    if(o&&o.items) o.items.forEach(it=>cart.push({...it}));
+    if(o&&o.addons) selectedAddons={...o.addons};
+    if(o&&o.quickNotes) selectedQuickNotes=[...o.quickNotes];
+    if(o&&o.customNote) customNote=o.customNote;
+  }
+
+  var num=key?tkOrders[key].num:(tkCounter+1);
+  document.getElementById('order-title').textContent=t('zone-TK')+' #'+num;
+  document.getElementById('order-sub').textContent=mode==='new'?t('tk-info'):(t('modify'));
+  document.getElementById('completed-banner').style.display='none';
+  showPage('page-order');
+  renderDrinks(true);
+  updateCartBar();
+}
+
+// ── OPEN ORDER ──
+function openOrder(tid,mode){
+  currentTable=tid;
+  orderMode=mode;
+  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[];
+
+  var existing=liveOrders[tid];
+  if(existing&&existing.items){
+    if(mode==='modify'){
+      // load existing into cart for editing
+      existing.items.forEach(it=>cart.push({...it}));
+      if(existing.addons) selectedAddons={...existing.addons};
+      if(existing.quickNotes) selectedQuickNotes=[...existing.quickNotes];
+      if(existing.customNote) customNote=existing.customNote;
+    } else if(mode==='append'){
+      // save completed items for display, start fresh cart
+      completedItems=existing.items.map(it=>({...it}));
+    }
+  }
+
+  document.getElementById('order-title').textContent=tid;
+  document.getElementById('order-sub').textContent=
+    mode==='modify'?t('modify'):
+    mode==='append'?t('append'):
+    t('order-drinks');
+
+  // show completed banner in append mode
+  var banner=document.getElementById('completed-banner');
+  if(mode==='append'&&completedItems.length){
+    var rows=completedItems.map(it=>`<div class="completed-item-row">
+      <span class="completed-item-name">${it.name}</span>
+      ${it.temp?`<span class="completed-item-temp">${it.temp==='hot'?t('hot'):t('cold')}</span>`:''}
+      <span class="completed-item-qty">×${it.qty}</span>
+    </div>`).join('');
+    banner.innerHTML=`<div class="completed-banner">
+      <div class="completed-banner-title">✓ ${t('completed-items')}</div>
+      ${rows}
+    </div>`;
+    banner.style.display='block';
+  } else {
+    banner.style.display='none';
+  }
+
+  showPage('page-order');
+  renderDrinks(false);
+  updateCartBar();
+}
+
+// ── RENDER DRINKS ──
+function getMenu(isTk){ return isTk?(remoteTkMenu&&remoteTkMenu.length?remoteTkMenu:DEFAULT_TK_MENU):(remoteMenu||DEFAULT_MENU); }
+
+function renderDrinks(isTk){
+  var menu=getMenu(isTk);
+  var addonCat=menu.find(c=>c.isAddon||c.cat==='Add On');
+  var drinkCats=menu.filter(c=>!c.isAddon&&c.cat!=='Add On');
+  var html='';
+
+  if(!drinkCats.length){
+    html=`<div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px">
+      ${isTk?'外带菜单还没设置，请在后台菜单管理添加':'暂无菜单'}
+    </div>`;
+  }
+
+  drinkCats.forEach(cat=>{
+    html+=`<div class="cat-hd">${cat.catZh||cat.cat}</div>`;
+    cat.items.forEach(d=>{
+      var hotQty=cart.filter(ci=>ci.drinkId===d.id&&ci.temp==='hot').reduce((s,ci)=>s+ci.qty,0);
+      var coldQty=cart.filter(ci=>ci.drinkId===d.id&&ci.temp==='cold').reduce((s,ci)=>s+ci.qty,0);
+      var inCart=hotQty+coldQty>0;
+
+      var priceHint='';
+      if(d.hasHot&&d.hasCold) priceHint=`${t('hot')} RM${(d.hotPrice||0).toFixed(2)} / ${t('cold')} RM${(d.coldPrice||0).toFixed(2)}`;
+      else priceHint=`RM ${(d.coldPrice||d.hotPrice||0).toFixed(2)}`;
+
+      html+=`<div class="drink-item ${inCart?'in-cart':''}" id="ditem-${d.id}">
+        <div class="drink-name-col">
+          <div class="drink-name">${d.name}</div>
+          <div class="drink-price-hint">${priceHint}</div>
+        </div>
+        <div class="drink-controls">`;
+
+      if(d.coldOnly||(!d.hasHot&&d.hasCold)){
+        html+=`<div class="qty-row">
+          <button class="qty-btn" onclick="chgQty('${d.id}','cold',-1,${isTk})">−</button>
+          <span class="qty-num" id="qn-${d.id}-cold">${coldQty}</span>
+          <button class="qty-btn plus" onclick="chgQty('${d.id}','cold',1,${isTk})">+</button>
+        </div>`;
+      } else {
+        if(d.hasHot) html+=`<div class="temp-pair">
+          <span class="temp-label">${t('hot')}</span>
+          <button class="qty-btn" onclick="chgQty('${d.id}','hot',-1,${isTk})">−</button>
+          <span class="qty-num" id="qn-${d.id}-hot">${hotQty}</span>
+          <button class="qty-btn plus" onclick="chgQty('${d.id}','hot',1,${isTk})">+</button>
+        </div>`;
+        if(d.hasCold) html+=`<div class="temp-pair">
+          <span class="temp-label">${t('cold')}</span>
+          <button class="qty-btn" onclick="chgQty('${d.id}','cold',-1,${isTk})">−</button>
+          <span class="qty-num" id="qn-${d.id}-cold">${coldQty}</span>
+          <button class="qty-btn plus" onclick="chgQty('${d.id}','cold',1,${isTk})">+</button>
+        </div>`;
+      }
+      html+=`</div></div>`;
+    });
+  });
+
+  if(addonCat&&addonCat.items.length){
+    html+=`<div class="addon-section">
+      <div class="notes-hd">${t('addon-section')}</div>
+      <div class="addon-grid">`;
+    addonCat.items.forEach(a=>{
+      html+=`<button class="addon-chip ${selectedAddons[a.id]?'active':''}" onclick="toggleAddon('${a.id}')">
+        ${a.name} <span class="addon-price">+RM${(a.price||0).toFixed(2)}</span>
+      </button>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  html+=`<div class="notes-section">
+    <div class="notes-hd">${t('notes')}</div>
+    <div class="quick-notes">`;
+  quickNotes.forEach(n=>{
+    html+=`<button class="qnote-chip ${selectedQuickNotes.includes(n)?'active':''}" onclick="toggleQNote('${n}')">${n}</button>`;
+  });
+  html+=`</div>
+    <textarea class="custom-note" rows="2" placeholder="${t('other-notes')}" oninput="customNote=this.value">${customNote}</textarea>
+  </div>`;
+
+  document.getElementById('drinks-scroll').innerHTML=html;
+}
+
+function chgQty(drinkId,temp,delta,isTk){
+  var menu=getMenu(isTk);
+  var item=cart.find(ci=>ci.drinkId===drinkId&&ci.temp===temp);
+  if(!item){
+    if(delta<=0) return;
+    var di=null;
+    menu.forEach(cat=>cat.items&&cat.items.forEach(d=>{if(d.id===drinkId)di=d;}));
+    if(!di) return;
+    var price=temp==='hot'?(di.hotPrice||0):(di.coldPrice||0);
+    item={drinkId,name:di.name,temp,price,qty:0,coldOnly:!!di.coldOnly};
+    cart.push(item);
+  }
+  item.qty=Math.max(0,item.qty+delta);
+  if(!item.qty) cart=cart.filter(ci=>!(ci.drinkId===drinkId&&ci.temp===temp));
+  updateCartBar();
+  var el=document.getElementById('ditem-'+drinkId);
+  if(el){
+    var inCart=cart.some(ci=>ci.drinkId===drinkId);
+    el.classList.toggle('in-cart',inCart);
+    var hq=cart.filter(ci=>ci.drinkId===drinkId&&ci.temp==='hot').reduce((s,ci)=>s+ci.qty,0);
+    var cq=cart.filter(ci=>ci.drinkId===drinkId&&ci.temp==='cold').reduce((s,ci)=>s+ci.qty,0);
+    var hn=document.getElementById('qn-'+drinkId+'-hot');
+    var cn=document.getElementById('qn-'+drinkId+'-cold');
+    if(hn) hn.textContent=hq;
+    if(cn) cn.textContent=cq;
+  }
+}
+
+function toggleAddon(id){
+  selectedAddons[id]=!selectedAddons[id];
+  var btn=document.querySelector(`[onclick="toggleAddon('${id}')"]`);
+  if(btn) btn.classList.toggle('active',selectedAddons[id]);
+  updateCartBar();
+}
+
+function toggleQNote(n){
+  var idx=selectedQuickNotes.indexOf(n);
+  if(idx>=0) selectedQuickNotes.splice(idx,1);
+  else selectedQuickNotes.push(n);
+  var btn=document.querySelector(`[onclick="toggleQNote('${n}')"]`);
+  if(btn) btn.classList.toggle('active',selectedQuickNotes.includes(n));
+}
+
+function updateCartBar(){
+  var isTk=currentTable&&currentTable.startsWith('TK');
+  var menu=getMenu(isTk);
+  var addonCat=menu.find(c=>c.isAddon||c.cat==='Add On');
+  var total=cart.reduce((s,ci)=>s+ci.price*ci.qty,0);
+  if(addonCat) addonCat.items.forEach(a=>{if(selectedAddons[a.id])total+=(a.price||0);});
+  var cups=cart.reduce((s,ci)=>s+ci.qty,0);
+  document.getElementById('cart-total').textContent='RM '+total.toFixed(2);
+  document.getElementById('cart-cups').textContent=cups>0?cups+' '+t('cups'):t('no-drinks');
+  document.getElementById('submit-btn').disabled=cups===0;
+  document.getElementById('submit-btn').textContent=t('submit');
+}
+
+// ── CONFIRM ──
+var simpleConfirmCb=null;
+function showSimpleConfirm(title,body,cb){
+  simpleConfirmCb=cb;
+  document.getElementById('sheet-title').textContent=title;
+  document.getElementById('sheet-sub').textContent=body;
+  document.getElementById('confirm-items').innerHTML='';
+  document.getElementById('confirm-total-row').style.display='none';
+  document.getElementById('lbl-place').textContent=t('confirm');
+  document.getElementById('lbl-place').onclick=()=>{simpleConfirmCb&&simpleConfirmCb();hideConfirm();};
+  document.getElementById('lbl-cancel').textContent=t('cancel');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function showConfirm(){
+  var isTk=currentTable&&currentTable.startsWith('TK');
+  var menu=getMenu(isTk);
+  var addonCat=menu.find(c=>c.isAddon||c.cat==='Add On');
+  document.getElementById('confirm-total-row').style.display='';
+  document.getElementById('sheet-title').textContent=t('confirm');
+  document.getElementById('sheet-sub').textContent=currentTable.startsWith('TK')?document.getElementById('order-title').textContent:currentTable;
+  document.getElementById('lbl-place').textContent=t('place-order');
+  document.getElementById('lbl-place').onclick=doSubmit;
+  document.getElementById('lbl-cancel').textContent=t('cancel');
+
+  var html='';
+  // in append mode show completed items
+  if(orderMode==='append'&&completedItems.length){
+    html+=`<div style="font-size:10px;font-weight:600;color:var(--green);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">✓ ${t('completed-items')}</div>`;
+    completedItems.forEach(it=>{
+      html+=`<div class="confirm-item-row" style="opacity:0.5;text-decoration:line-through">
+        <div><div>${it.name}</div><div class="confirm-item-meta">${it.temp?( it.temp==='hot'?t('hot'):t('cold')):''} ×${it.qty}</div></div>
+        <div class="confirm-item-price">RM ${(it.price*it.qty).toFixed(2)}</div>
+      </div>`;
+    });
+    html+=`<div style="font-size:10px;font-weight:600;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin:8px 0 6px;">${t('new-items')}</div>`;
+  }
+
+  cart.forEach(ci=>{
+    html+=`<div class="confirm-item-row">
+      <div><div>${ci.name}</div><div class="confirm-item-meta">${ci.coldOnly?'':(ci.temp==='hot'?t('hot'):t('cold'))} ×${ci.qty}</div></div>
+      <div class="confirm-item-price">RM ${(ci.price*ci.qty).toFixed(2)}</div>
+    </div>`;
+  });
+  if(addonCat) addonCat.items.forEach(a=>{
+    if(selectedAddons[a.id]) html+=`<div class="confirm-item-row">
+      <div><div>+ ${a.name}</div></div>
+      <div class="confirm-item-price">RM ${(a.price||0).toFixed(2)}</div>
+    </div>`;
+  });
+  var allNotes=[...selectedQuickNotes,...(customNote.trim()?[customNote.trim()]:[])];
+  if(allNotes.length) html+=`<div class="confirm-item-row"><div style="font-size:12px;color:var(--text3)">📝 ${allNotes.join('，')}</div></div>`;
+
+  document.getElementById('confirm-items').innerHTML=html;
+  var total=cart.reduce((s,ci)=>s+ci.price*ci.qty,0);
+  if(addonCat) addonCat.items.forEach(a=>{if(selectedAddons[a.id])total+=(a.price||0);});
+  document.getElementById('confirm-total-amt').textContent='RM '+total.toFixed(2);
+  document.getElementById('overlay').classList.add('show');
+}
+
+function hideConfirm(e){
+  if(e&&e.target!==document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── SUBMIT ──
+function doSubmit(){
+  hideConfirm();
+  var isTk=currentTable&&currentTable.startsWith('TK');
+  var menu=getMenu(isTk);
+  var addonCat=menu.find(c=>c.isAddon||c.cat==='Add On');
+  var total=cart.reduce((s,ci)=>s+ci.price*ci.qty,0);
+  if(addonCat) addonCat.items.forEach(a=>{if(selectedAddons[a.id])total+=(a.price||0);});
+  var allNotes=[...selectedQuickNotes,...(customNote.trim()?[customNote.trim()]:[])];
+  var time=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
+  var now=Date.now();
+  var today=todayKey();
+
+  if(isTk){
+    // takeaway
+    var tkKey=currentTable.replace('TK:','');
+    var isNew=tkKey==='NEW';
+    var num=isNew?(tkCounter+1):tkOrders[tkKey]?.num;
+    var orderData={items:cart,addons:selectedAddons,quickNotes:selectedQuickNotes,
+      customNote:customNote.trim(),notesDisplay:allNotes.join('，'),total,time,
+      tableId:'TK#'+num,num,done:false,submittedAt:now};
+    if(isNew){
+      var newRef=db.ref('tkOrders').push();
+      newRef.set(orderData);
+      db.ref('settings/tkCounter').set(num);
+      // history
+      db.ref('history/'+today).push({...orderData});
+    } else {
+      db.ref('tkOrders/'+tkKey).set(orderData);
+      // update history
+      db.ref('history/'+today).orderByChild('tableId').equalTo('TK#'+num).once('value',snap=>{
+        if(snap.val()){var k=Object.keys(snap.val()).pop();db.ref('history/'+today+'/'+k).set({...orderData});}
+        else db.ref('history/'+today).push({...orderData});
+      });
+    }
+  } else {
+    // table order
+    var existing=liveOrders[currentTable];
+    var orderData={
+      items:cart,
+      completedItems:orderMode==='append'?completedItems:[],
+      addons:selectedAddons,quickNotes:selectedQuickNotes,
+      customNote:customNote.trim(),notesDisplay:allNotes.join('，'),
+      total,time,tableId:currentTable,
+      done:false,submittedAt:now,
+      orderMode,
+    };
+    // if append, keep done=false so kitchen sees new items
+    // update history — always update existing record for this table today
+    db.ref('history/'+today).orderByChild('tableId').equalTo(currentTable).once('value',snap=>{
+      if(snap.val()){
+        var keys=Object.keys(snap.val());
+        var lastKey=keys[keys.length-1];
+        // don't overwrite cleared records
+        if(!snap.val()[lastKey].cleared){
+          db.ref('history/'+today+'/'+lastKey).set({...orderData,submittedAt:now});
+          return;
+        }
+      }
+      db.ref('history/'+today).push({...orderData,submittedAt:now});
+    });
+    db.ref('orders/'+currentTable).set(orderData);
+  }
+
+  showToast(orderMode==='new'?'✓ 订单已提交！':orderMode==='append'?'✓ 已追加！':'✓ 已修改！');
+  setTimeout(goBack,1000);
+}
+
+function todayKey(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function goBack(){
+  showPage('page-tables');
+  renderTablesZone(currentZone);
+}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+applyLang();
+switchZone('A');
+</script>
+</body>
+</html>

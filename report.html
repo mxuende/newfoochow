@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账单报告 — 新福州素食园</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#FAF8F4;--surface:#FFFFFF;--surface2:#F0EDE8;--surface3:#E5E1DA;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:#1C1917;--text2:#6B6460;--text3:#A09895;
+  --accent:#B85C1A;--green:#237A4B;--green-lt:#E6F4EE;
+  --r:12px;--rsm:8px;
+}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.logo{font-size:15px;font-weight:600;}
+.topbar-right{display:flex;gap:8px;}
+.btn{padding:6px 14px;border:1px solid var(--border2);border-radius:14px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;}
+.btn:hover{background:var(--surface2);}
+.btn-print{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-print:hover{background:#93470F;}
+
+.layout{display:flex;gap:0;}
+.sidebar{width:170px;flex-shrink:0;border-right:1px solid var(--border);min-height:calc(100vh - 53px);padding:14px 10px;}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.7px;text-transform:uppercase;margin:12px 0 4px;padding:0 4px;}
+.nav-label:first-child{margin-top:0;}
+.nav-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 8px;border:none;background:none;color:var(--text2);font-size:12px;font-family:inherit;border-radius:var(--rsm);cursor:pointer;text-align:left;transition:all 0.12s;}
+.nav-btn:hover{background:var(--surface2);}
+.nav-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.nav-rev{font-size:11px;color:var(--text3);}
+.nav-btn.active .nav-rev{color:var(--accent);}
+.today-tag{font-size:9px;background:var(--accent);color:#fff;border-radius:5px;padding:1px 4px;margin-left:3px;}
+.no-hist{font-size:11px;color:var(--text3);padding:3px 8px;}
+
+.content{flex:1;padding:20px;max-width:900px;}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.sum-lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.sum-val{font-size:24px;font-weight:600;}
+.sum-unit{font-size:11px;color:var(--text2);margin-top:1px;}
+
+/* ORDERS */
+.sec-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.order-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.order-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:11px 14px;}
+.order-row-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.order-row-table{font-size:14px;font-weight:600;}
+.order-row-time{font-size:11px;color:var(--text3);}
+.order-row-total{font-size:14px;font-weight:600;color:var(--accent);}
+.order-items-list{font-size:12px;color:var(--text2);line-height:1.8;}
+.order-note{font-size:11px;color:var(--text3);margin-top:3px;}
+.badge-tk{font-size:10px;font-weight:600;background:#EAF2FF;color:#1A5FAA;padding:2px 7px;border-radius:7px;}
+
+/* DRINK STATS */
+.ds-table{width:100%;border-collapse:collapse;font-size:13px;}
+.ds-table th{text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--border);}
+.ds-table td{padding:8px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
+.ds-table td:last-child{text-align:right;font-weight:500;color:var(--accent);}
+.ds-table tr:last-child td{border-bottom:none;}
+
+.empty-state{text-align:center;padding:48px;color:var(--text3);font-size:13px;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+
+@media print{
+  .topbar,.sidebar{display:none;}
+  .content{padding:0;max-width:100%;}
+  body{background:#fff;}
+  .sum-card,.order-row{box-shadow:none;border:1px solid #ddd;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">📊 新福州素食园 · 账单报告</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn" onclick="window.close()">关闭</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 打印</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-label">今天</div>
+    <div id="nav-today"></div>
+    <div class="nav-label">历史</div>
+    <div id="nav-history"></div>
+  </div>
+  <div class="content" id="content">
+    <div class="empty-state"><div class="empty-icon">📋</div>选择左边的日期查看账单</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyA6u8YxJxx5ZPqCdMbzEHuuREUpJs9yFgE",
+  authDomain:"new-foochow-vegetarian-da965.firebaseapp.com",
+  databaseURL:"https://new-foochow-vegetarian-da965-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"new-foochow-vegetarian-da965",
+  storageBucket:"new-foochow-vegetarian-da965.firebasestorage.app",
+  messagingSenderId:"933797712684",
+  appId:"1:933797712684:web:410ca8bf84d3743397d289"
+});
+var db=firebase.database();
+var historyData={},tkOrdersData={},selectedDay=null;
+
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtDate(k){var[y,m,d]=k.split('-');return y+'年'+parseInt(m)+'月'+parseInt(d)+'日';}
+function fmtShort(k){var[,m,d]=k.split('-');return parseInt(m)+'/'+parseInt(d);}
+
+db.ref('history').on('value',snap=>{historyData=snap.val()||{};buildSidebar();if(selectedDay)renderReport(selectedDay);});
+db.ref('tkOrders').on('value',snap=>{tkOrdersData=snap.val()||{};if(selectedDay)renderReport(selectedDay);});
+
+function buildSidebar(){
+  var today=todayKey();
+  var hist=historyData[today]||{};
+  var rev=Object.values(hist).reduce((s,e)=>s+(e.total||0),0);
+  document.getElementById('nav-today').innerHTML=`
+    <button class="nav-btn ${selectedDay===today?'active':''}" onclick="selectDay('${today}')">
+      <span>${fmtShort(today)}<span class="today-tag">今</span></span>
+      <span class="nav-rev">RM ${rev.toFixed(0)}</span>
+    </button>`;
+  var days=Object.keys(historyData).filter(k=>k!==today).sort().reverse();
+  document.getElementById('nav-history').innerHTML=days.length
+    ?days.map(day=>{
+        var r=Object.values(historyData[day]||{}).reduce((s,e)=>s+(e.total||0),0);
+        return `<button class="nav-btn ${selectedDay===day?'active':''}" onclick="selectDay('${day}')">
+          <span>${fmtShort(day)}</span><span class="nav-rev">RM ${r.toFixed(0)}</span>
+        </button>`;
+      }).join('')
+    :'<div class="no-hist">暂无历史</div>';
+}
+
+function selectDay(day){
+  selectedDay=day;
+  buildSidebar();
+  renderReport(day);
+}
+
+function renderReport(day){
+  var today=todayKey();
+  var isToday=day===today;
+  var hist=historyData[day]||{};
+  var entries=Object.values(hist);
+
+  // For today, also include live tkOrders
+  var tkEntries=isToday?Object.values(tkOrdersData):entries.filter(e=>e.tableId&&e.tableId.startsWith('TK#'));
+  var dineEntries=entries.filter(e=>!e.tableId||!e.tableId.startsWith('TK#'));
+
+  var allEntries=[...dineEntries,...tkEntries];
+  var totalRev=allEntries.reduce((s,e)=>s+(e.total||0),0);
+  var totalCups=allEntries.reduce((s,e)=>s+(e.items||[]).reduce((ss,it)=>ss+it.qty,0),0);
+  var totalOrders=allEntries.length;
+
+  // drink totals
+  var drinkTotals={};
+  allEntries.forEach(e=>(e.items||[]).forEach(it=>{
+    var k=it.name+(it.temp||'');
+    if(!drinkTotals[k]) drinkTotals[k]={name:it.name,temp:it.temp,qty:0,rev:0};
+    drinkTotals[k].qty+=it.qty;drinkTotals[k].rev+=(it.price||0)*it.qty;
+  }));
+  var sortedDrinks=Object.values(drinkTotals).sort((a,b)=>b.qty-a.qty);
+
+  // sort orders by time
+  dineEntries.sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
+  tkEntries.sort((a,b)=>(a.num||0)-(b.num||0));
+
+  var html=`
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:4px;">${fmtDate(day)}</h2>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;">新福州素食园 New Foochow Vegetarian</p>
+
+    <div class="sum-grid">
+      <div class="sum-card"><div class="sum-lbl">总营业额</div><div class="sum-val" style="font-size:20px">RM ${totalRev.toFixed(2)}</div></div>
+      <div class="sum-card"><div class="sum-lbl">订单桌数</div><div class="sum-val">${totalOrders}</div><div class="sum-unit">桌/单</div></div>
+      <div class="sum-card"><div class="sum-lbl">总杯数</div><div class="sum-val">${totalCups}</div><div class="sum-unit">杯</div></div>
+      <div class="sum-card"><div class="sum-lbl">堂食</div><div class="sum-val" style="color:var(--green)">${dineEntries.length}</div><div class="sum-unit">桌</div></div>
+      <div class="sum-card"><div class="sum-lbl">外带</div><div class="sum-val" style="color:#1A5FAA">${tkEntries.length}</div><div class="sum-unit">单</div></div>
+    </div>
+
+    <div class="sec-title">堂食订单</div>
+    <div class="order-list">`;
+
+  if(!dineEntries.length) html+='<div style="font-size:12px;color:var(--text3);padding:8px 0;">暂无堂食订单</div>';
+  dineEntries.forEach(e=>{
+    var items=(e.items||[]).map(it=>`${it.name}${it.temp?(' '+(it.temp==='hot'?'热':'冷')):''}×${it.qty}`).join('、');
+    html+=`<div class="order-row">
+      <div class="order-row-hd">
+        <div><span class="order-row-table">${e.tableId||'—'}</span> <span class="order-row-time">${e.time||''}</span></div>
+        <div class="order-row-total">RM ${(e.total||0).toFixed(2)}</div>
+      </div>
+      <div class="order-items-list">${items}</div>
+      ${e.notesDisplay?`<div class="order-note">📝 ${e.notesDisplay}</div>`:''}
+    </div>`;
+  });
+
+  html+=`</div>
+    <div class="sec-title">外带订单</div>
+    <div class="order-list">`;
+
+  if(!tkEntries.length) html+='<div style="font-size:12px;color:var(--text3);padding:8px 0;">暂无外带订单</div>';
+  tkEntries.forEach(e=>{
+    var items=(e.items||[]).map(it=>`${it.name}${it.temp?(' '+(it.temp==='hot'?'热':'冷')):''}×${it.qty}`).join('、');
+    html+=`<div class="order-row">
+      <div class="order-row-hd">
+        <div><span class="order-row-table">外带 #${e.num||''}</span> <span class="order-row-time">${e.time||''}</span> <span class="badge-tk">外带</span></div>
+        <div class="order-row-total">RM ${(e.total||0).toFixed(2)}</div>
+      </div>
+      <div class="order-items-list">${items}</div>
+      ${e.notesDisplay?`<div class="order-note">📝 ${e.notesDisplay}</div>`:''}
+    </div>`;
+  });
+
+  html+=`</div>
+    <div class="sec-title">饮料销量排行</div>
+    <table class="ds-table">
+      <tr><th>饮料</th><th>杯数</th><th>小计</th></tr>
+      ${sortedDrinks.map(d=>`<tr>
+        <td>${d.name}${d.temp?' · '+(d.temp==='hot'?'热':'冰'):''}</td>
+        <td>${d.qty} 杯</td>
+        <td>RM ${d.rev.toFixed(2)}</td>
+      </tr>`).join('')}
+      ${!sortedDrinks.length?'<tr><td colspan="3" style="text-align:center;color:var(--text3)">暂无数据</td></tr>':''}
+    </table>
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px;font-weight:600;">
+      <span>总营业额</span><span style="color:var(--accent)">RM ${totalRev.toFixed(2)}</span>
+    </div>`;
+
+  document.getElementById('content').innerHTML=html;
+}
+
+buildSidebar();
+selectDay(todayKey());
+</script>
+</body>
+</html>
