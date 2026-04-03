@@ -170,7 +170,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
     <div class="brand-en">New Foochow Vegetarian</div>
   </div>
   <div class="topbar-right">
-    <button class="tbtn" id="lang-btn" onclick="cycleLang()">EN</button>
+    <button class="tbtn" id="lang-btn" onclick="cycleLang()">ID</button>
     <button class="tbtn" onclick="window.open('kitchen.html','_blank')" id="btn-kitchen">后台</button>
   </div>
 </div>
@@ -185,27 +185,27 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
   <div class="tables-wrap" id="tables-wrap"></div>
 </div>
 
-<div class="page" id="page-order">
-  <div class="order-page" id="order-page-inner">
-    <div class="order-topbar">
-      <button class="back-btn" onclick="goBack()">← <span id="lbl-back">返回</span></button>
-      <div>
-        <div class="order-title" id="order-title"></div>
-        <div class="order-sub" id="order-sub"></div>
-      </div>
-    </div>
-    <!-- completed items shown in append mode -->
-    <div id="completed-banner" style="display:none"></div>
-    <div class="drinks-scroll" id="drinks-scroll"></div>
-    <div class="cart-bar">
-      <div style="flex:1">
-        <div class="cart-total-amt" id="cart-total">RM 0.00</div>
-        <div class="cart-cup-ct" id="cart-cups"></div>
-      </div>
-      <button class="submit-btn" id="submit-btn" onclick="showConfirm()" disabled>确认下单</button>
+<!-- ORDER PANEL — outside .page so position:fixed works on all browsers -->
+<div id="order-panel" style="display:none;position:fixed;inset:0;z-index:150;background:var(--bg);flex-direction:column;flex:1;">
+  <div class="order-topbar">
+    <button class="back-btn" onclick="goBack()">← <span id="lbl-back">返回</span></button>
+    <div>
+      <div class="order-title" id="order-title"></div>
+      <div class="order-sub" id="order-sub"></div>
     </div>
   </div>
+  <div id="completed-banner" style="display:none"></div>
+  <div class="drinks-scroll" id="drinks-scroll" style="flex:1;overflow-y:auto;"></div>
+  <div class="cart-bar">
+    <div style="flex:1">
+      <div class="cart-total-amt" id="cart-total">RM 0.00</div>
+      <div class="cart-cup-ct" id="cart-cups"></div>
+    </div>
+    <button class="submit-btn" id="submit-btn" onclick="showConfirm()" disabled>确认下单</button>
+  </div>
 </div>
+
+<div class="page" id="page-order" style="display:none!important"></div>
 
 <div class="overlay" id="overlay" onclick="hideConfirm(event)">
   <div class="confirm-sheet" onclick="event.stopPropagation()">
@@ -246,7 +246,7 @@ var L = {
   zh:{
     back:'返回', kitchen:'后台', 'zone-A':'A区','zone-B':'B区','zone-TK':'外带',
     occupied:'有人', empty:'空桌', 'not-ordered':'未点', indoor:'室内', outdoor:'室外',
-    hot:'热', cold:'冰', 'order-drinks':'点饮料', modify:'修改', append:'追加',
+    hot:'热', cold:'冰', 'order-drinks':'点单', modify:'修改', append:'追加',
     'clear-table':'清台', confirm:'确认', cancel:'取消', 'place-order':'提交订单',
     total:'合计', 'no-drinks':'未选择饮料', cups:'杯', 'outdoor-b':'B区室外 (B16-B20)',
     'tk-info':'外带单独下单，每单独立显示',
@@ -911,12 +911,16 @@ function todayKey(){
 }
 
 function goBack(){
-  showPage('page-tables');
+  document.getElementById('order-panel').style.display='none';
   renderTablesZone(currentZone);
 }
 function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  // for order page, show the panel directly
+  if(id==='page-order'){
+    document.getElementById('order-panel').style.display='flex';
+  } else {
+    document.getElementById('order-panel').style.display='none';
+  }
 }
 function showToast(msg){
   var t=document.getElementById('toast');

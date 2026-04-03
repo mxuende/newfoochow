@@ -181,7 +181,7 @@ input[type=number].num-in{width:60px;background:var(--surface2);border:1px solid
   </div>
   <div class="topbar-right">
     <div class="stat-chip"><span id="k-pending-lbl">待做</span> <b id="stat-pending">0</b></div>
-    <button class="btn-sm" onclick="refresh()">刷新</button>
+    <button class="btn-sm" onclick="refresh()" id="k-refresh-btn">刷新</button>
     <button class="btn-sm" id="lang-toggle" onclick="toggleKitchenLang()" style="font-weight:600">ID</button>
   </div>
 </div>
@@ -394,7 +394,7 @@ var KL = {
     append:'追加', modify:'修改', noActive:'暂无进行中的订单', noArchived:'暂无已结束的桌位',
     noRecord:'这天暂无记录', noTk:'暂无外带订单', noData:'暂无数据',
     clearDay:'清空当天', confirmClear:'清空？', confirmClearToday:'将清除今天所有记录。', confirmClearHist:'将删除该日历史账单。',
-    updated:'更新：'
+    updated:'更新：', todaySuffix:'(今天)', refresh:'刷新'
   },
   id:{
     title:'Dapur', live:'Live', pending:'Belum buat', today:'Hari ini', hist:'Rekod lama', manage:'Tetapan',
@@ -407,7 +407,7 @@ var KL = {
     append:'Tambah', modify:'Edit', noActive:'Takde order lagi', noArchived:'Takde yang dah habis',
     noRecord:'Takde rekod hari ni', noTk:'Takde tapau lagi', noData:'Takde data',
     clearDay:'Clear hari ini', confirmClear:'Clear?', confirmClearToday:'Nak clear semua order hari ini.', confirmClearHist:'Nak delete rekod hari ni.',
-    updated:'Dikemaskini: '
+    updated:'Dikemaskini: ', todaySuffix:'(hari ini)', refresh:'Refresh'
   }
 };
 function kl(k){ return (KL[kitchenLang]||KL.zh)[k]||k; }
@@ -418,30 +418,31 @@ function toggleKitchenLang(){
   renderDay();
 }
 function applyKitchenLang(){
-  var el=function(id){return document.getElementById(id);};
-  var e=el('k-title');if(e)e.textContent=kl('title');
-  var e2=el('k-live');if(e2)e2.textContent=kl('live');
-  var e3=el('k-pending-lbl');if(e3)e3.textContent=kl('pending');
-  var e4=el('k-today-lbl');if(e4)e4.textContent=kl('today');
-  var e5=el('k-hist-lbl');if(e5)e5.textContent=kl('hist');
-  var e6=el('k-manage-lbl');if(e6)e6.textContent=kl('manage');
+  var g=function(id){return document.getElementById(id);};
+  var e;
+  e=g('k-title');if(e)e.textContent=kl('title');
+  e=g('k-live');if(e)e.textContent=kl('live');
+  e=g('k-pending-lbl');if(e)e.textContent=kl('pending');
+  e=g('k-today-lbl');if(e)e.textContent=kl('today');
+  e=g('k-hist-lbl');if(e)e.textContent=kl('hist');
+  e=g('k-manage-lbl');if(e)e.textContent=kl('manage');
+  e=g('k-refresh-btn');if(e)e.textContent=kl('refresh');
+  e=g('btn-clear-day');if(e)e.textContent=kl('clearDay');
   // tabs
   ['active','archived','tk','drinks'].forEach(k=>{
-    var btn=el('tab-'+k); if(btn) btn.textContent=kl(k);
+    var btn=g('tab-'+k); if(btn) btn.textContent=kl(k);
   });
   // nav btns with data attrs
   document.querySelectorAll('.nav-btn[data-zh]').forEach(btn=>{
     btn.textContent=btn.getAttribute('data-'+kitchenLang)||btn.getAttribute('data-zh');
   });
   // settings
-  var st=el('k-settings-title');if(st)st.textContent=kl('settings');
-  var rl=el('k-remind-lbl');if(rl)rl.textContent=kl('remind');
-  var sl=el('k-sound-lbl');if(sl)sl.textContent=kl('sound');
-  var ss=el('k-sound-sub');if(ss)ss.textContent=kl('soundSub');
-  var tl=el('k-timeout-lbl');if(tl)tl.textContent=kl('timeout');
-  var ts=el('k-timeout-sub');if(ts)ts.textContent=kl('timeoutSub');
-  // clear day btn
-  var cd=el('btn-clear-day');if(cd)cd.textContent=kl('clearDay');
+  e=g('k-settings-title');if(e)e.textContent=kl('settings');
+  e=g('k-remind-lbl');if(e)e.textContent=kl('remind');
+  e=g('k-sound-lbl');if(e)e.textContent=kl('sound');
+  e=g('k-sound-sub');if(e)e.textContent=kl('soundSub');
+  e=g('k-timeout-lbl');if(e)e.textContent=kl('timeout');
+  e=g('k-timeout-sub');if(e)e.textContent=kl('timeoutSub');
 }
 var liveOrders={},tkOrders={},historyData={};
 var quickNotes=["少糖","少冰","无糖","打包","热饮去冰","走","少甜","Kurang Manis","Kurang Ais"];
@@ -493,7 +494,13 @@ function playBeep(){
 }
 
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fmtDate(k){var[y,m,d]=k.split('-');return y+'年'+parseInt(m)+'月'+parseInt(d)+'日';}
+function fmtDate(k){
+  var parts=k.split('-');
+  var y=parts[0],m=parseInt(parts[1]),d=parseInt(parts[2]);
+  var months=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+  if(kitchenLang==='id') return d+' '+months[m-1]+' '+y;
+  return y+'年'+m+'月'+d+'日';
+}
 function fmtShort(k){var[,m,d]=k.split('-');return parseInt(m)+'/'+parseInt(d);}
 function isTimeout(o){return !o.done&&o.submittedAt&&(Date.now()-o.submittedAt)>(settings.timeout*60*1000);}
 
@@ -532,11 +539,10 @@ function selectDay(day){
 function renderDay(){
   var today=todayKey();
   var isToday=selectedDay===today;
-  document.getElementById('day-title').textContent=fmtDate(selectedDay)+(isToday?' ('+kl('today')+')':'');
-  document.getElementById('refresh-note').textContent=kl('updated')+' '+new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('day-title').textContent=fmtDate(selectedDay)+(isToday?' '+kl('todaySuffix'):'');
+  document.getElementById('refresh-note').textContent=kl('updated')+new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
   document.getElementById('tab-active').style.display=isToday?'':'none';
-  // archived tab label changes based on context
   var archTab=document.getElementById('tab-archived');
   if(archTab) archTab.textContent=isToday?kl('archived'):kl('records');
   if(!isToday&&currentDayTab==='active'){currentDayTab='archived';updateTabActive();}
