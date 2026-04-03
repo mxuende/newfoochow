@@ -68,30 +68,29 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .tab-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
 
 /* ORDERS GRID */
-.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
 .order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
 .order-card.done{border-color:rgba(76,175,120,0.2);background:rgba(76,175,120,0.03);}
 .order-card.timeout{border-color:rgba(224,88,88,0.4);}
 .order-card.archived{border-color:rgba(255,255,255,0.04);opacity:0.6;}
-.oc-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;}
-.oc-table{font-size:17px;font-weight:600;}
-.oc-time{font-size:11px;color:var(--text3);margin-top:1px;}
+/* new card layout: drinks left, status right */
+.oc-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.oc-drinks-block{flex:1;min-width:0;}
+.oc-status-col{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.oc-drink-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:2px 0;}
+.oc-drink-row:not(:last-child){border-bottom:1px solid var(--border);}
+.oc-drink-name{font-size:16px;font-weight:600;color:var(--text);}
+.oc-drink-meta{font-size:12px;color:var(--text2);white-space:nowrap;}
+.oc-drink-row.completed-prev .oc-drink-name{font-size:14px;font-weight:400;opacity:0.4;text-decoration:line-through;}
+.oc-drink-row.completed-prev .oc-drink-meta{opacity:0.4;}
+.oc-divider{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;padding:5px 0 2px;}
+.oc-table-small{font-size:11px;color:var(--text3);margin-bottom:2px;}
 .badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;}
 .badge-pend{background:var(--amber-bg);color:var(--amber);}
 .badge-done{background:var(--green-bg);color:var(--green);}
 .badge-timeout{background:var(--red-bg);color:var(--red);}
 .badge-tk{background:var(--blue-bg);color:var(--blue);}
 .badge-archived{background:rgba(255,255,255,0.06);color:var(--text3);}
-.oc-items{margin-bottom:7px;}
-.oc-item{display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.oc-item:last-child{border-bottom:none;}
-.oc-item-name{flex:1;color:var(--text2);}
-.oc-item-temp{font-size:10px;color:var(--text3);}
-.oc-item-qty{font-weight:600;font-size:12px;}
-.oc-item.completed-prev{opacity:0.4;text-decoration:line-through;}
-.oc-section-label{font-size:9px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;padding:4px 0 2px;color:var(--text3);}
-.oc-section-label.new{color:var(--accent);}
-.oc-section-label.done-lbl{color:var(--green);}
 .oc-addons{font-size:11px;color:var(--text3);margin-bottom:3px;}
 .oc-note{background:var(--surface2);border-radius:5px;padding:5px 7px;font-size:11px;color:var(--text2);margin-bottom:7px;}
 .oc-footer{display:flex;justify-content:space-between;align-items:center;}
@@ -386,7 +385,7 @@ var kitchenLang = 'zh';
 var KL = {
   zh:{
     title:'后台', live:'实时', pending:'待做', today:'今天', hist:'历史账单', manage:'管理',
-    active:'进行中', archived:'已结束', tk:'外带', drinks:'饮料统计',
+    active:'进行中', archived:'已结束', records:'订单记录', tk:'外带', drinks:'饮料统计',
     settings:'设置', remind:'提醒', sound:'新订单提示音', soundSub:'有新单或修改时发出提示音',
     timeout:'超时提醒（分钟）', timeoutSub:'超时后订单卡标红',
     done:'完成 ✓', pending_badge:'待做', timeout_badge:'超时 ⚠',
@@ -394,11 +393,12 @@ var KL = {
     undo:'撤销', finish:'✓ 完成', tapau:'外带', archived_badge:'已结束',
     append:'追加', modify:'修改', noActive:'暂无进行中的订单', noArchived:'暂无已结束的桌位',
     noRecord:'这天暂无记录', noTk:'暂无外带订单', noData:'暂无数据',
-    clearDay:'清空当天', confirmClear:'清空？', confirmClearToday:'将清除今天所有记录。', confirmClearHist:'将删除该日历史账单。'
+    clearDay:'清空当天', confirmClear:'清空？', confirmClearToday:'将清除今天所有记录。', confirmClearHist:'将删除该日历史账单。',
+    updated:'更新：'
   },
   id:{
     title:'Dapur', live:'Live', pending:'Belum buat', today:'Hari ini', hist:'Rekod lama', manage:'Tetapan',
-    active:'Sedang buat', archived:'Dah habis', tk:'Tapau', drinks:'Statistik',
+    active:'Sedang buat', archived:'Dah habis', records:'Rekod order', tk:'Tapau', drinks:'Statistik',
     settings:'Tetapan', remind:'Peringatan', sound:'Bunyi order baru', soundSub:'Bunyi bila ada order baru',
     timeout:'Lama tunggu (minit)', timeoutSub:'Kad merah bila dah lama',
     done:'Done ✓', pending_badge:'Belum buat', timeout_badge:'Lama ni ⚠',
@@ -406,7 +406,8 @@ var KL = {
     undo:'Undo', finish:'✓ Done', tapau:'Tapau', archived_badge:'Dah habis',
     append:'Tambah', modify:'Edit', noActive:'Takde order lagi', noArchived:'Takde yang dah habis',
     noRecord:'Takde rekod hari ni', noTk:'Takde tapau lagi', noData:'Takde data',
-    clearDay:'Clear hari ini', confirmClear:'Clear?', confirmClearToday:'Nak clear semua order hari ini.', confirmClearHist:'Nak delete rekod hari ni.'
+    clearDay:'Clear hari ini', confirmClear:'Clear?', confirmClearToday:'Nak clear semua order hari ini.', confirmClearHist:'Nak delete rekod hari ni.',
+    updated:'Dikemaskini: '
   }
 };
 function kl(k){ return (KL[kitchenLang]||KL.zh)[k]||k; }
@@ -531,12 +532,13 @@ function selectDay(day){
 function renderDay(){
   var today=todayKey();
   var isToday=selectedDay===today;
-  document.getElementById('day-title').textContent=fmtDate(selectedDay)+(isToday?' (今天)':'');
-  document.getElementById('refresh-note').textContent='更新：'+new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('day-title').textContent=fmtDate(selectedDay)+(isToday?' ('+kl('today')+')':'');
+  document.getElementById('refresh-note').textContent=kl('updated')+' '+new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-  // Show/hide today-only tabs
   document.getElementById('tab-active').style.display=isToday?'':'none';
-  document.getElementById('tab-archived').textContent=isToday?'已结束':'订单记录';
+  // archived tab label changes based on context
+  var archTab=document.getElementById('tab-archived');
+  if(archTab) archTab.textContent=isToday?kl('archived'):kl('records');
   if(!isToday&&currentDayTab==='active'){currentDayTab='archived';updateTabActive();}
 
   if(currentDayTab==='active') renderActiveOrders();
@@ -602,27 +604,24 @@ function renderTkOrders(isToday){
 function orderCardHTML(o,isToday,key,isArchived,isTk){
   var isDone=o.done;
   var timedOut=isToday&&!isArchived&&isTimeout(o)&&!isDone;
-  var tableLabel=isTk?('外带 #'+(o.num||'')):(o.tableId||key);
+  var tableLabel=isTk?('Tapau #'+(o.num||'')):(o.tableId||key);
   var cls='order-card'+(isDone?' done':timedOut?' timeout':isArchived?' archived':'');
 
-  var itemsHtml='';
-  // show completed items (append mode)
+  // build drink lines — big and clear
+  var drinkLines='';
   if(o.completedItems&&o.completedItems.length){
-    itemsHtml+=`<div class="oc-section-label done-lbl">${kl('completed')}</div>`;
     o.completedItems.forEach(it=>{
-      itemsHtml+=`<div class="oc-item completed-prev">
-        <span class="oc-item-name">${it.name}</span>
-        ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?kl('hot'):kl('cold')}</span>`:''}
-        <span class="oc-item-qty">×${it.qty}</span>
+      drinkLines+=`<div class="oc-drink-row completed-prev">
+        <span class="oc-drink-name">${it.name}</span>
+        <span class="oc-drink-meta">${it.temp?kl(it.temp==='hot'?'hot':'cold'):''} ×${it.qty}</span>
       </div>`;
     });
-    itemsHtml+=`<div class="oc-section-label new">${kl('newItems')}</div>`;
+    drinkLines+=`<div class="oc-divider">${kl('newItems')}</div>`;
   }
   (o.items||[]).forEach(it=>{
-    itemsHtml+=`<div class="oc-item">
-      <span class="oc-item-name">${it.name}</span>
-      ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?kl('hot'):kl('cold')}</span>`:''}
-      <span class="oc-item-qty">×${it.qty}</span>
+    drinkLines+=`<div class="oc-drink-row">
+      <span class="oc-drink-name">${it.name}</span>
+      <span class="oc-drink-meta">${it.temp?kl(it.temp==='hot'?'hot':'cold'):''} ×${it.qty}</span>
     </div>`;
   });
 
@@ -638,24 +637,26 @@ function orderCardHTML(o,isToday,key,isArchived,isTk){
     else actions+=`<button class="btn-sm btn-green" onclick="markOrder('${key}',true,${!!isTk})">${kl('finish')}</button>`;
   }
 
+  var statusBadge=isDone?kl('done'):timedOut?kl('timeout_badge'):kl('pending_badge');
+  var statusCls=isDone?'badge-done':timedOut?'badge-timeout':'badge-pend';
+
   return `<div class="${cls}">
-    <div class="oc-hd">
-      <div>
-        <div class="oc-table">${tableLabel}</div>
-        <div class="oc-time">${o.time||''}${o.orderMode==='append'?' · '+kl('append'):o.orderMode==='modify'?' · '+kl('modify'):''}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+    <div class="oc-top">
+      <div class="oc-drinks-block">${drinkLines}</div>
+      <div class="oc-status-col">
         ${isTk?`<div class="badge badge-tk">${kl('tapau')}</div>`:''}
         ${isArchived?`<div class="badge badge-archived">${kl('archived_badge')}</div>`:''}
-        <div class="badge ${isDone?'badge-done':timedOut?'badge-timeout':'badge-pend'}">${isDone?kl('done'):timedOut?kl('timeout_badge'):kl('pending_badge')}</div>
+        <div class="badge ${statusCls}">${statusBadge}</div>
       </div>
     </div>
     ${timedOut?`<div class="timeout-lbl">⚠ ${kl('timeout_badge')} (${settings.timeout} min)</div>`:''}
-    <div class="oc-items">${itemsHtml}</div>
     ${addonNames.length?`<div class="oc-addons">+ ${addonNames.join('，')}</div>`:''}
     ${o.notesDisplay?`<div class="oc-note">📝 ${o.notesDisplay}</div>`:''}
     <div class="oc-footer">
-      <div style="font-size:13px;font-weight:600;color:var(--accent)">RM ${(o.total||0).toFixed(2)}</div>
+      <div>
+        <div class="oc-table-small">${tableLabel} · ${o.time||''}${o.orderMode==='append'?' · '+kl('append'):o.orderMode==='modify'?' · '+kl('modify'):''}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--accent)">RM ${(o.total||0).toFixed(2)}</div>
+      </div>
       <div class="oc-actions">${actions}</div>
     </div>
   </div>`;

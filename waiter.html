@@ -89,7 +89,8 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 /* ORDER PAGE — sticky bottom bar */
 .order-page{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;background:var(--bg);}
 .order-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.back-btn{padding:5px 11px;border:1px solid var(--border2);border-radius:13px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.back-btn{padding:8px 16px;border:1.5px solid var(--border2);border-radius:20px;font-size:14px;font-weight:600;background:var(--surface2);color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.back-btn:active{background:var(--surface3);}
 .order-title{font-size:15px;font-weight:600;}
 .order-sub{font-size:11px;color:var(--text3);margin-top:1px;}
 
@@ -245,24 +246,24 @@ var L = {
   zh:{
     back:'返回', kitchen:'后台', 'zone-A':'A区','zone-B':'B区','zone-TK':'外带',
     occupied:'有人', empty:'空桌', 'not-ordered':'未点', indoor:'室内', outdoor:'室外',
-    hot:'热', cold:'冰', 'order-drinks':'Order', modify:'修改', append:'Tambah',
+    hot:'热', cold:'冰', 'order-drinks':'点饮料', modify:'修改', append:'追加',
     'clear-table':'清台', confirm:'确认', cancel:'取消', 'place-order':'提交订单',
     total:'合计', 'no-drinks':'未选择饮料', cups:'杯', 'outdoor-b':'B区室外 (B16-B20)',
     'tk-info':'外带单独下单，每单独立显示',
     'new-tk':'+ 新外带订单', 'completed-items':'已完成（不会重复制作）',
     'new-items':'新追加', submit:'确认下单', 'confirm-clear':'确认清台？',
     'confirm-clear-body':'此桌订单将移至已结束，不可撤销。',
-    'addon-section':'Add On 附加', notes:'备注', 'other-notes':'其他备注...'
+    'addon-section':'附加', notes:'备注', 'other-notes':'其他备注...'
   },
   id:{
     back:'Balik', kitchen:'Dapur', 'zone-A':'Area A','zone-B':'Area B','zone-TK':'Tapau',
     occupied:'Ada orang', empty:'Kosong', 'not-ordered':'Belum order', indoor:'Dalam', outdoor:'Luar',
-    hot:'Panas', cold:'Dingin', 'order-drinks':'Order', modify:'Edit', append:'Tambah',
+    hot:'Panas', cold:'Sejuk', 'order-drinks':'Order', modify:'Edit', append:'Tambah',
     'clear-table':'Clear meja', confirm:'OK', cancel:'Batal', 'place-order':'Kirim',
     total:'Total', 'no-drinks':'Belum pilih', cups:'gelas', 'outdoor-b':'Area B Luar (B16-B20)',
     'tk-info':'Setiap tapau order berasingan',
     'new-tk':'+ Tapau baru', 'completed-items':'Dah siap (tak buat lagi)',
-    'new-items':'Tambahan baru', submit:'Order', 'confirm-clear':'Clear meja?',
+    'new-items':'Tambahan baru', submit:'Hantar order', 'confirm-clear':'Clear meja?',
     'confirm-clear-body':'Order meja ni akan diarkib.',
     'addon-section':'Tambahan', notes:'Catatan', 'other-notes':'Catatan lain...'
   },
@@ -270,8 +271,9 @@ var L = {
 function t(k){ return (L[LANGS[langIdx]]||L.zh)[k]||k; }
 function cycleLang(){
   langIdx=(langIdx+1)%LANGS.length;
-  var labels=['ID','中'];
-  document.getElementById('lang-btn').textContent=labels[langIdx];
+  // when zh: show 'ID' to indicate next switch goes to ID
+  // when id: show '中' to indicate next switch goes to zh
+  document.getElementById('lang-btn').textContent=langIdx===0?'ID':'中';
   applyLang();
   renderTablesZone(currentZone);
 }
