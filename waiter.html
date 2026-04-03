@@ -42,7 +42,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .area-label:first-child{margin-top:0;}
 
 /* Floor plan grid for A zone */
-.floor-a-outdoor{display:flex;gap:8px;margin-bottom:4px;}
+.floor-a-outdoor{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
 .floor-a-indoor{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 /* Floor plan for B zone */
 .floor-b-outdoor{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:4px;}
@@ -50,7 +50,6 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 
 /* Table cards */
 .table-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:10px 8px 9px;position:relative;user-select:none;min-width:0;}
-.table-card.round{border-radius:50px;}
 .table-card.occupied{border-color:#C09060;background:#FFFBF5;}
 .table-card.occupied-ordered{border-color:var(--green-bd);background:var(--green-lt);}
 .table-card.empty{opacity:0.5;}
@@ -62,10 +61,6 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .tdrink{font-size:9px;color:var(--text3);text-align:center;min-height:12px;}
 .table-card.occupied-ordered .tdrink{color:var(--green);}
 .cup-dot{position:absolute;top:5px;right:5px;background:var(--accent);color:#fff;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;}
-.occ-row{display:flex;margin-top:6px;border:1px solid var(--border2);border-radius:10px;overflow:hidden;}
-.occ-row button{flex:1;padding:3px 0;font-size:9px;font-family:inherit;border:none;background:none;color:var(--text3);cursor:pointer;}
-.occ-row button.a-occ{background:var(--amber);color:#fff;font-weight:600;}
-.occ-row button.a-emp{background:var(--surface2);color:var(--text2);font-weight:500;}
 .order-btn{display:block;width:100%;margin-top:5px;padding:4px 0;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;font-family:inherit;cursor:pointer;}
 .order-btn.modify{background:none;color:var(--green);border:1.5px solid var(--green);}
 .order-btn.append{background:none;color:var(--blue);border:1.5px solid var(--blue);}
@@ -92,7 +87,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .new-tk-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
 
 /* ORDER PAGE — sticky bottom bar */
-.order-page{display:flex;flex-direction:column;height:calc(100vh - 57px - 43px);position:relative;}
+.order-page{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;background:var(--bg);}
 .order-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .back-btn{padding:5px 11px;border:1px solid var(--border2);border-radius:13px;font-size:12px;background:none;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;}
 .order-title{font-size:15px;font-weight:600;}
@@ -244,44 +239,38 @@ firebase.initializeApp({
 var db = firebase.database();
 
 // ── LANG ──
-var LANGS = ['zh','en','id'];
+var LANGS = ['zh','id'];
 var langIdx = 0;
 var L = {
-  zh:{ back:'返回', kitchen:'后台', 'zone-A':'A区','zone-B':'B区','zone-TK':'外带',
-       occupied:'有人', empty:'空桌', 'not-ordered':'未点', indoor:'室内', outdoor:'室外',
-       hot:'热', cold:'冰', 'order-drinks':'点饮料', modify:'修改', append:'追加',
-       'clear-table':'清台', confirm:'确认', cancel:'取消', 'place-order':'提交订单',
-       total:'合计', 'no-drinks':'未选择饮料', cups:'杯', 'outdoor-b':'B区室外 (B16-B20)',
-       'tk-info':'外带单独下单，每单独立显示',
-       'new-tk':'+ 新外带订单', 'completed-items':'已完成项目（不会重复制作）',
-       'new-items':'新追加项目', submit:'确认下单', 'confirm-clear':'确认清台？',
-       'confirm-clear-body':'此桌订单将移至已结束，不可撤销。',
-       'addon-section':'Add On 附加', notes:'备注', 'other-notes':'其他备注...' },
-  en:{ back:'Back', kitchen:'Kitchen', 'zone-A':'Zone A','zone-B':'Zone B','zone-TK':'Takeaway',
-       occupied:'Occupied', empty:'Empty', 'not-ordered':'No drinks', indoor:'Indoor', outdoor:'Outdoor',
-       hot:'Hot', cold:'Iced', 'order-drinks':'Order', modify:'Modify', append:'Add More',
-       'clear-table':'Clear', confirm:'Confirm', cancel:'Cancel', 'place-order':'Place Order',
-       total:'Total', 'no-drinks':'No drinks selected', cups:'cups', 'outdoor-b':'Zone B Outdoor (B16-B20)',
-       'tk-info':'Each takeaway order is separate',
-       'new-tk':'+ New Takeaway Order', 'completed-items':'Completed (will not be remade)',
-       'new-items':'New items', submit:'Review Order', 'confirm-clear':'Clear table?',
-       'confirm-clear-body':'This will archive orders for this table.',
-       'addon-section':'Add On', notes:'Notes', 'other-notes':'Other notes...' },
-  id:{ back:'Kembali', kitchen:'Dapur', 'zone-A':'Area A','zone-B':'Area B','zone-TK':'Bawa Pulang',
-       occupied:'Ada Tamu', empty:'Kosong', 'not-ordered':'Belum Pesan', indoor:'Dalam', outdoor:'Luar',
-       hot:'Panas', cold:'Dingin', 'order-drinks':'Pesan', modify:'Ubah', append:'Tambah',
-       'clear-table':'Bersihkan', confirm:'Konfirmasi', cancel:'Batal', 'place-order':'Kirim Pesanan',
-       total:'Total', 'no-drinks':'Belum pilih minuman', cups:'gelas', 'outdoor-b':'Area B Luar (B16-B20)',
-       'tk-info':'Setiap pesanan bawa pulang terpisah',
-       'new-tk':'+ Pesanan Baru', 'completed-items':'Sudah selesai (tidak dibuat ulang)',
-       'new-items':'Item baru', submit:'Periksa Pesanan', 'confirm-clear':'Bersihkan meja?',
-       'confirm-clear-body':'Pesanan meja ini akan diarsipkan.',
-       'addon-section':'Tambahan', notes:'Catatan', 'other-notes':'Catatan lain...' },
+  zh:{
+    back:'返回', kitchen:'后台', 'zone-A':'A区','zone-B':'B区','zone-TK':'外带',
+    occupied:'有人', empty:'空桌', 'not-ordered':'未点', indoor:'室内', outdoor:'室外',
+    hot:'热', cold:'冰', 'order-drinks':'Order', modify:'修改', append:'Tambah',
+    'clear-table':'清台', confirm:'确认', cancel:'取消', 'place-order':'提交订单',
+    total:'合计', 'no-drinks':'未选择饮料', cups:'杯', 'outdoor-b':'B区室外 (B16-B20)',
+    'tk-info':'外带单独下单，每单独立显示',
+    'new-tk':'+ 新外带订单', 'completed-items':'已完成（不会重复制作）',
+    'new-items':'新追加', submit:'确认下单', 'confirm-clear':'确认清台？',
+    'confirm-clear-body':'此桌订单将移至已结束，不可撤销。',
+    'addon-section':'Add On 附加', notes:'备注', 'other-notes':'其他备注...'
+  },
+  id:{
+    back:'Balik', kitchen:'Dapur', 'zone-A':'Area A','zone-B':'Area B','zone-TK':'Tapau',
+    occupied:'Ada orang', empty:'Kosong', 'not-ordered':'Belum order', indoor:'Dalam', outdoor:'Luar',
+    hot:'Panas', cold:'Dingin', 'order-drinks':'Order', modify:'Edit', append:'Tambah',
+    'clear-table':'Clear meja', confirm:'OK', cancel:'Batal', 'place-order':'Kirim',
+    total:'Total', 'no-drinks':'Belum pilih', cups:'gelas', 'outdoor-b':'Area B Luar (B16-B20)',
+    'tk-info':'Setiap tapau order berasingan',
+    'new-tk':'+ Tapau baru', 'completed-items':'Dah siap (tak buat lagi)',
+    'new-items':'Tambahan baru', submit:'Order', 'confirm-clear':'Clear meja?',
+    'confirm-clear-body':'Order meja ni akan diarkib.',
+    'addon-section':'Tambahan', notes:'Catatan', 'other-notes':'Catatan lain...'
+  },
 };
 function t(k){ return (L[LANGS[langIdx]]||L.zh)[k]||k; }
 function cycleLang(){
   langIdx=(langIdx+1)%LANGS.length;
-  var labels=['EN','ID','中'];
+  var labels=['ID','中'];
   document.getElementById('lang-btn').textContent=labels[langIdx];
   applyLang();
   renderTablesZone(currentZone);
@@ -380,7 +369,7 @@ var TABLE_LAYOUT = {
       // row 3
       [{id:'A8',round:false},{id:'A9',round:false},{id:'A10',round:false}],
     ],
-    outdoor:[{id:'A12',round:true},{id:'A13',round:true},{id:'A14',round:true},{id:'A15',round:true}],
+    outdoor:[{id:'A12',round:false},{id:'A13',round:false},{id:'A14',round:false},{id:'A15',round:false}],
     outdoorToggleable:false,
   },
   B:{
@@ -453,7 +442,7 @@ function renderTablesZone(z){
   zone.indoor.forEach(row=>{
     row.forEach(cell=>{
       if(!cell||!cell.id) html+=`<div></div>`;
-      else html+=tableCardHTML(cell.id,cell.round);
+      else html+=tableCardHTML(cell.id);
     });
   });
   html+='</div>';
@@ -462,13 +451,13 @@ function renderTablesZone(z){
   if(showOutdoor&&zone.outdoor.length){
     html+=`<div class="area-label">${t('outdoor')}</div>`;
     html+=`<div class="floor-${z.toLowerCase()}-outdoor">`;
-    zone.outdoor.forEach(cell=>{ html+=tableCardHTML(cell.id,cell.round); });
+    zone.outdoor.forEach(cell=>{ html+=tableCardHTML(cell.id); });
     html+='</div>';
   }
   wrap.innerHTML=html;
 }
 
-function tableCardHTML(tid,round){
+function tableCardHTML(tid){
   var status=tableStatuses[tid]||'empty';
   var occupied=status==='occupied';
   var order=liveOrders[tid];
@@ -476,7 +465,7 @@ function tableCardHTML(tid,round){
   var cups=hasActive?order.items.reduce((s,it)=>s+it.qty,0):0;
   var isDone=hasActive&&order.done;
 
-  var cls='table-card '+(round?'round ':'');
+  var cls='table-card ';
   if(!occupied) cls+='empty';
   else if(hasActive) cls+='occupied-ordered';
   else cls+='occupied';
@@ -485,12 +474,13 @@ function tableCardHTML(tid,round){
   var drinkLabel=hasActive?(isDone?'✓ '+cups+' '+t('cups'):cups+' '+t('cups')):(occupied?t('not-ordered'):'—');
 
   var btns='';
-  if(occupied){
+  if(!occupied){
+    // empty table — tap to mark occupied and start ordering
+    btns+=`<button class="order-btn" onclick="setOccAndOrder('${tid}')">${t('order-drinks')}</button>`;
+  } else {
     if(hasActive&&isDone){
-      // completed — only append
       btns+=`<button class="order-btn append" onclick="openOrder('${tid}','append')">${t('append')}</button>`;
     } else if(hasActive){
-      // pending — can modify
       btns+=`<button class="order-btn modify" onclick="openOrder('${tid}','modify')">${t('modify')}</button>`;
     } else {
       btns+=`<button class="order-btn" onclick="openOrder('${tid}','new')">${t('order-drinks')}</button>`;
@@ -503,12 +493,13 @@ function tableCardHTML(tid,round){
     <div class="tnum">${tid}</div>
     <div class="tocc">${occLabel}</div>
     <div class="tdrink">${drinkLabel}</div>
-    <div class="occ-row" onclick="event.stopPropagation()">
-      <button class="${occupied?'a-occ':''}" onclick="setOcc('${tid}',true)">${t('occupied')}</button>
-      <button class="${!occupied?'a-emp':''}" onclick="setOcc('${tid}',false)">${t('empty')}</button>
-    </div>
     ${btns}
   </div>`;
+}
+
+function setOccAndOrder(tid){
+  db.ref('tableStatuses/'+tid).set('occupied');
+  openOrder(tid,'new');
 }
 
 function setOcc(tid,val){

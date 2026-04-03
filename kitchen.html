@@ -177,29 +177,29 @@ input[type=number].num-in{width:60px;background:var(--surface2);border:1px solid
 <div class="topbar">
   <div class="topbar-left">
     <button class="sidebar-toggle" onclick="toggleSidebar()" title="收起侧边栏">☰</button>
-    <div class="logo">🍹 新福州素食园 · 后台</div>
-    <div class="live-pill"><div class="live-dot"></div>实时</div>
+    <div class="logo">🍹 新福州素食园 · <span id="k-title">后台</span></div>
+    <div class="live-pill"><div class="live-dot"></div><span id="k-live">实时</span></div>
   </div>
   <div class="topbar-right">
-    <div class="stat-chip">待做 <b id="stat-pending">0</b></div>
+    <div class="stat-chip"><span id="k-pending-lbl">待做</span> <b id="stat-pending">0</b></div>
     <button class="btn-sm" onclick="refresh()">刷新</button>
+    <button class="btn-sm" id="lang-toggle" onclick="toggleKitchenLang()" style="font-weight:600">ID</button>
   </div>
 </div>
 
 <div class="layout">
   <div class="sidebar" id="sidebar">
     <div class="sidebar-inner">
-      <div class="nav-label">今天</div>
+      <div class="nav-label" id="k-today-lbl">今天</div>
       <div id="nav-today"></div>
-      <div class="nav-label">历史账单</div>
+      <div class="nav-label" id="k-hist-lbl">历史账单</div>
       <div id="nav-history"></div>
-      <div class="nav-label" style="margin-top:16px">管理</div>
-      <button class="nav-btn" id="nav-menu" onclick="showManage('menu')">堂食菜单</button>
-      <button class="nav-btn" id="nav-tkmenu" onclick="showManage('tkmenu')">外带菜单</button>
-      <button class="nav-btn" id="nav-notes" onclick="showManage('notes')">备注设置</button>
-      <button class="nav-btn" id="nav-settings" onclick="showManage('settings')">系统设置</button>
-      <button class="nav-btn" id="nav-print" onclick="showManage('print')">打印设置</button>
-      <button class="nav-btn" onclick="window.open('report.html','_blank')" style="color:var(--accent);margin-top:4px">📊 账单报告</button>
+      <div class="nav-label" style="margin-top:16px" id="k-manage-lbl">管理</div>
+      <button class="nav-btn" id="nav-menu" onclick="showManage('menu')" data-zh="堂食菜单" data-id="Menu makan sini">堂食菜单</button>
+      <button class="nav-btn" id="nav-tkmenu" onclick="showManage('tkmenu')" data-zh="外带菜单" data-id="Menu tapau">外带菜单</button>
+      <button class="nav-btn" id="nav-notes" onclick="showManage('notes')" data-zh="备注" data-id="Catatan">备注</button>
+      <button class="nav-btn" id="nav-settings" onclick="showManage('settings')" data-zh="设置" data-id="Tetapan">设置</button>
+      <button class="nav-btn" id="nav-print" onclick="showManage('print')" data-zh="打印" data-id="Cetak">打印</button>
     </div>
   </div>
 
@@ -212,14 +212,14 @@ input[type=number].num-in{width:60px;background:var(--surface2);border:1px solid
           <div class="sec-title" id="day-title">今天</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px" id="day-meta"></div>
         </div>
-        <button class="btn-sm btn-danger" onclick="confirmClearDay()">清空当天</button>
+        <button class="btn-sm btn-danger" id="btn-clear-day" onclick="confirmClearDay()" data-zh="清空当天" data-id="Clear hari ini">清空当天</button>
       </div>
 
       <div class="tabs">
-        <button class="tab-btn active" id="tab-active" onclick="switchTab('active')">进行中</button>
-        <button class="tab-btn" id="tab-archived" onclick="switchTab('archived')">已结束</button>
-        <button class="tab-btn" id="tab-tk" onclick="switchTab('tk')">外带</button>
-        <button class="tab-btn" id="tab-drinks" onclick="switchTab('drinks')">饮料统计</button>
+        <button class="tab-btn active" id="tab-active" onclick="switchTab('active')" data-zh="进行中" data-id="Sedang buat">进行中</button>
+        <button class="tab-btn" id="tab-archived" onclick="switchTab('archived')" data-zh="已结束" data-id="Dah habis">已结束</button>
+        <button class="tab-btn" id="tab-tk" onclick="switchTab('tk')" data-zh="外带" data-id="Tapau">外带</button>
+        <button class="tab-btn" id="tab-drinks" onclick="switchTab('drinks')" data-zh="饮料统计" data-id="Statistik">饮料统计</button>
       </div>
 
       <div class="refresh-note" id="refresh-note"></div>
@@ -258,15 +258,15 @@ input[type=number].num-in{width:60px;background:var(--surface2);border:1px solid
 
     <!-- SETTINGS -->
     <div class="pc" id="pc-settings">
-      <div class="sec-hd"><div class="sec-title">系统设置</div></div>
+      <div class="sec-hd"><div class="sec-title" id="k-settings-title">设置</div></div>
       <div class="settings-block">
-        <div class="settings-title">提醒</div>
+        <div class="settings-title" id="k-remind-lbl">提醒</div>
         <div class="setting-row">
-          <div><div class="setting-label">新订单提示音</div><div class="setting-sub">有新单或修改时发出提示音</div></div>
+          <div><div class="setting-label" id="k-sound-lbl">新订单提示音</div><div class="setting-sub" id="k-sound-sub">有新单或修改时发出提示音</div></div>
           <label class="tog"><input type="checkbox" id="set-sound" checked onchange="saveSetting('sound',this.checked)"><div class="tog-track"></div><div class="tog-thumb"></div></label>
         </div>
         <div class="setting-row">
-          <div><div class="setting-label">超时提醒（分钟）</div><div class="setting-sub">超时后订单卡标红</div></div>
+          <div><div class="setting-label" id="k-timeout-lbl">超时提醒（分钟）</div><div class="setting-sub" id="k-timeout-sub">超时后订单卡标红</div></div>
           <input type="number" class="num-in" id="set-timeout" value="10" min="1" max="60" onchange="saveSetting('timeout',parseInt(this.value)||10)">
         </div>
       </div>
@@ -381,7 +381,67 @@ var DEFAULT_MENU=[
   ]},
 ];
 
-// ── STATE ──
+// ── KITCHEN LANG ──
+var kitchenLang = 'zh';
+var KL = {
+  zh:{
+    title:'后台', live:'实时', pending:'待做', today:'今天', hist:'历史账单', manage:'管理',
+    active:'进行中', archived:'已结束', tk:'外带', drinks:'饮料统计',
+    settings:'设置', remind:'提醒', sound:'新订单提示音', soundSub:'有新单或修改时发出提示音',
+    timeout:'超时提醒（分钟）', timeoutSub:'超时后订单卡标红',
+    done:'完成 ✓', pending_badge:'待做', timeout_badge:'超时 ⚠',
+    completed:'✓ 已完成', newItems:'↓ 新追加', hot:'热', cold:'冰',
+    undo:'撤销', finish:'✓ 完成', tapau:'外带', archived_badge:'已结束',
+    append:'追加', modify:'修改', noActive:'暂无进行中的订单', noArchived:'暂无已结束的桌位',
+    noRecord:'这天暂无记录', noTk:'暂无外带订单', noData:'暂无数据',
+    clearDay:'清空当天', confirmClear:'清空？', confirmClearToday:'将清除今天所有记录。', confirmClearHist:'将删除该日历史账单。'
+  },
+  id:{
+    title:'Dapur', live:'Live', pending:'Belum buat', today:'Hari ini', hist:'Rekod lama', manage:'Tetapan',
+    active:'Sedang buat', archived:'Dah habis', tk:'Tapau', drinks:'Statistik',
+    settings:'Tetapan', remind:'Peringatan', sound:'Bunyi order baru', soundSub:'Bunyi bila ada order baru',
+    timeout:'Lama tunggu (minit)', timeoutSub:'Kad merah bila dah lama',
+    done:'Done ✓', pending_badge:'Belum buat', timeout_badge:'Lama ni ⚠',
+    completed:'✓ Dah siap', newItems:'↓ Tambahan baru', hot:'Panas', cold:'Sejuk',
+    undo:'Undo', finish:'✓ Done', tapau:'Tapau', archived_badge:'Dah habis',
+    append:'Tambah', modify:'Edit', noActive:'Takde order lagi', noArchived:'Takde yang dah habis',
+    noRecord:'Takde rekod hari ni', noTk:'Takde tapau lagi', noData:'Takde data',
+    clearDay:'Clear hari ini', confirmClear:'Clear?', confirmClearToday:'Nak clear semua order hari ini.', confirmClearHist:'Nak delete rekod hari ni.'
+  }
+};
+function kl(k){ return (KL[kitchenLang]||KL.zh)[k]||k; }
+function toggleKitchenLang(){
+  kitchenLang = kitchenLang==='zh'?'id':'zh';
+  document.getElementById('lang-toggle').textContent = kitchenLang==='zh'?'ID':'中';
+  applyKitchenLang();
+  renderDay();
+}
+function applyKitchenLang(){
+  var el=function(id){return document.getElementById(id);};
+  var e=el('k-title');if(e)e.textContent=kl('title');
+  var e2=el('k-live');if(e2)e2.textContent=kl('live');
+  var e3=el('k-pending-lbl');if(e3)e3.textContent=kl('pending');
+  var e4=el('k-today-lbl');if(e4)e4.textContent=kl('today');
+  var e5=el('k-hist-lbl');if(e5)e5.textContent=kl('hist');
+  var e6=el('k-manage-lbl');if(e6)e6.textContent=kl('manage');
+  // tabs
+  ['active','archived','tk','drinks'].forEach(k=>{
+    var btn=el('tab-'+k); if(btn) btn.textContent=kl(k);
+  });
+  // nav btns with data attrs
+  document.querySelectorAll('.nav-btn[data-zh]').forEach(btn=>{
+    btn.textContent=btn.getAttribute('data-'+kitchenLang)||btn.getAttribute('data-zh');
+  });
+  // settings
+  var st=el('k-settings-title');if(st)st.textContent=kl('settings');
+  var rl=el('k-remind-lbl');if(rl)rl.textContent=kl('remind');
+  var sl=el('k-sound-lbl');if(sl)sl.textContent=kl('sound');
+  var ss=el('k-sound-sub');if(ss)ss.textContent=kl('soundSub');
+  var tl=el('k-timeout-lbl');if(tl)tl.textContent=kl('timeout');
+  var ts=el('k-timeout-sub');if(ts)ts.textContent=kl('timeoutSub');
+  // clear day btn
+  var cd=el('btn-clear-day');if(cd)cd.textContent=kl('clearDay');
+}
 var liveOrders={},tkOrders={},historyData={};
 var quickNotes=["少糖","少冰","无糖","打包","热饮去冰","走","少甜","Kurang Manis","Kurang Ais"];
 var currentMenu=JSON.parse(JSON.stringify(DEFAULT_MENU));
@@ -501,7 +561,7 @@ function updateTabActive(){
 function renderActiveOrders(){
   var entries=Object.entries(liveOrders).filter(([k,o])=>o.items&&o.items.length);
   if(!entries.length){
-    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">🧃</div>暂无进行中的订单</div>';
+    document.getElementById('tab-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🧃</div>${kl('noActive')}</div>`;
     return;
   }
   entries.sort((a,b)=>a[1].done===b[1].done?0:(a[1].done?1:-1));
@@ -513,11 +573,10 @@ function renderArchivedOrders(isToday){
   var hist=historyData[selectedDay]||{};
   var entries=Object.entries(hist);
   if(isToday){
-    // show only cleared entries
     entries=entries.filter(([k,e])=>e.cleared);
   }
   if(!entries.length){
-    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>'+(isToday?'暂无已结束的桌位':'这天暂无记录')+'</div>';
+    document.getElementById('tab-content').innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div>${isToday?kl('noArchived'):kl('noRecord')}</div>`;
     return;
   }
   entries.sort((a,b)=>(b[1].submittedAt||0)-(a[1].submittedAt||0));
@@ -533,7 +592,7 @@ function renderTkOrders(isToday){
     entries=Object.entries(hist).filter(([k,e])=>e.tableId&&e.tableId.startsWith('TK#')).map(([k,e])=>([k,e]));
   }
   if(!entries.length){
-    document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">🛍️</div>暂无外带订单</div>';
+    document.getElementById('tab-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🛍️</div>${kl('noTk')}</div>`;
     return;
   }
   entries.sort((a,b)=>(a[1].num||0)-(b[1].num||0));
@@ -549,20 +608,20 @@ function orderCardHTML(o,isToday,key,isArchived,isTk){
   var itemsHtml='';
   // show completed items (append mode)
   if(o.completedItems&&o.completedItems.length){
-    itemsHtml+=`<div class="oc-section-label done-lbl">✓ 已完成</div>`;
+    itemsHtml+=`<div class="oc-section-label done-lbl">${kl('completed')}</div>`;
     o.completedItems.forEach(it=>{
       itemsHtml+=`<div class="oc-item completed-prev">
         <span class="oc-item-name">${it.name}</span>
-        ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?'热':'冰'}</span>`:''}
+        ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?kl('hot'):kl('cold')}</span>`:''}
         <span class="oc-item-qty">×${it.qty}</span>
       </div>`;
     });
-    itemsHtml+=`<div class="oc-section-label new">↓ 新追加</div>`;
+    itemsHtml+=`<div class="oc-section-label new">${kl('newItems')}</div>`;
   }
   (o.items||[]).forEach(it=>{
     itemsHtml+=`<div class="oc-item">
       <span class="oc-item-name">${it.name}</span>
-      ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?'热':'冰'}</span>`:''}
+      ${it.temp?`<span class="oc-item-temp">${it.temp==='hot'?kl('hot'):kl('cold')}</span>`:''}
       <span class="oc-item-qty">×${it.qty}</span>
     </div>`;
   });
@@ -575,23 +634,23 @@ function orderCardHTML(o,isToday,key,isArchived,isTk){
 
   var actions='';
   if(isToday&&!isArchived){
-    if(isDone) actions+=`<button class="btn-sm" onclick="markOrder('${key}',false,${!!isTk})">撤销</button>`;
-    else actions+=`<button class="btn-sm btn-green" onclick="markOrder('${key}',true,${!!isTk})">✓ 完成</button>`;
+    if(isDone) actions+=`<button class="btn-sm" onclick="markOrder('${key}',false,${!!isTk})">${kl('undo')}</button>`;
+    else actions+=`<button class="btn-sm btn-green" onclick="markOrder('${key}',true,${!!isTk})">${kl('finish')}</button>`;
   }
 
   return `<div class="${cls}">
     <div class="oc-hd">
       <div>
         <div class="oc-table">${tableLabel}</div>
-        <div class="oc-time">${o.time||''}${o.orderMode==='append'?' · 追加':o.orderMode==='modify'?' · 修改':''}</div>
+        <div class="oc-time">${o.time||''}${o.orderMode==='append'?' · '+kl('append'):o.orderMode==='modify'?' · '+kl('modify'):''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        ${isTk?'<div class="badge badge-tk">外带</div>':''}
-        ${isArchived?'<div class="badge badge-archived">已结束</div>':''}
-        <div class="badge ${isDone?'badge-done':timedOut?'badge-timeout':'badge-pend'}">${isDone?'完成':timedOut?'超时':'待做'}</div>
+        ${isTk?`<div class="badge badge-tk">${kl('tapau')}</div>`:''}
+        ${isArchived?`<div class="badge badge-archived">${kl('archived_badge')}</div>`:''}
+        <div class="badge ${isDone?'badge-done':timedOut?'badge-timeout':'badge-pend'}">${isDone?kl('done'):timedOut?kl('timeout_badge'):kl('pending_badge')}</div>
       </div>
     </div>
-    ${timedOut?`<div class="timeout-lbl">⚠ 超过${settings.timeout}分钟</div>`:''}
+    ${timedOut?`<div class="timeout-lbl">⚠ ${kl('timeout_badge')} (${settings.timeout} min)</div>`:''}
     <div class="oc-items">${itemsHtml}</div>
     ${addonNames.length?`<div class="oc-addons">+ ${addonNames.join('，')}</div>`:''}
     ${o.notesDisplay?`<div class="oc-note">📝 ${o.notesDisplay}</div>`:''}
@@ -623,7 +682,7 @@ function renderDrinkStats(isToday){
   }));
   var sorted=Object.values(totals).sort((a,b)=>b.qty-a.qty);
   var maxQty=sorted[0]?.qty||1;
-  if(!sorted.length){document.getElementById('tab-content').innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>暂无数据</div>';return;}
+  if(!sorted.length){document.getElementById('tab-content').innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div>${kl('noData')}</div>`;return;}
   document.getElementById('tab-content').innerHTML='<div class="ds-grid">'+sorted.map(d=>`
     <div class="ds-row">
       <div class="ds-info">
@@ -637,11 +696,13 @@ function renderDrinkStats(isToday){
 // ── CLEAR DAY ──
 function confirmClearDay(){
   var isToday=selectedDay===todayKey();
-  showModal('清空 '+fmtDate(selectedDay)+'？',isToday?'将清除今天所有记录。':'将删除该日历史账单。',()=>{
-    db.ref('history/'+selectedDay).remove();
-    if(isToday){db.ref('orders').remove();db.ref('tkOrders').remove();db.ref('settings/tkCounter').set(0);}
-    selectedDay=todayKey();renderDay();
-  });
+  showModal(kl('confirmClear')+' '+fmtDate(selectedDay),
+    isToday?kl('confirmClearToday'):kl('confirmClearHist'),
+    ()=>{
+      db.ref('history/'+selectedDay).remove();
+      if(isToday){db.ref('orders').remove();db.ref('tkOrders').remove();db.ref('settings/tkCounter').set(0);}
+      selectedDay=todayKey();renderDay();
+    });
 }
 
 // ── MANAGE PAGES ──
@@ -783,6 +844,7 @@ function closeModal(){document.getElementById('overlay').classList.remove('show'
 function refresh(){updateTopStats();buildSidebar();if(document.getElementById('pc-day').classList.contains('active'))renderDay();}
 
 // ── INIT ──
+applyKitchenLang();
 selectDay(todayKey());
 setInterval(()=>{if(selectedDay===todayKey()&&document.getElementById('pc-day').classList.contains('active'))renderDay();},8000);
 </script>
