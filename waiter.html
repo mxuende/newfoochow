@@ -186,7 +186,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <!-- ORDER PANEL — outside .page so position:fixed works on all browsers -->
-<div id="order-panel" style="display:none;position:fixed;inset:0;z-index:150;background:var(--bg);flex-direction:column;flex:1;">
+<div id="order-panel" style="display:none;position:fixed;inset:0;z-index:150;background:var(--bg);flex-direction:column;">
   <div class="order-topbar">
     <button class="back-btn" onclick="goBack()">← <span id="lbl-back">返回</span></button>
     <div>
@@ -915,7 +915,6 @@ function goBack(){
   renderTablesZone(currentZone);
 }
 function showPage(id){
-  // for order page, show the panel directly
   if(id==='page-order'){
     document.getElementById('order-panel').style.display='flex';
   } else {
