@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>新福州素食园 — 点单</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="新福州点单">
-<meta name="theme-color" content="#B85C1A">
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -163,7 +157,22 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .sheet-btn-cancel{flex:1;padding:11px;border:1px solid var(--border2);border-radius:13px;background:none;color:var(--text2);font-size:14px;font-family:inherit;cursor:pointer;}
 .sheet-btn-confirm{flex:2;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:13px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
 
-/* TOAST */
+/* ── PRINT STYLES ── */
+@media print {
+  body * { visibility: hidden !important; }
+  #print-receipt, #print-receipt * { visibility: visible !important; }
+  #print-receipt {
+    position: fixed !important;
+    top: 0; left: 0;
+    width: 80mm;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #000;
+    background: #fff;
+    padding: 6mm 4mm;
+  }
+}
+#print-receipt { display: none; }
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1C1917;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
@@ -230,6 +239,8 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="print-receipt"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -908,10 +919,79 @@ function doSubmit(){
   }
 
   showToast(orderMode==='new'?'✓ 订单已提交！':orderMode==='append'?'✓ 已追加！':'✓ 已修改！');
+
+  // ── PRINT ──
+  var isTkPrint = currentTable && currentTable.startsWith('TK');
+  var menu2 = getMenu(isTkPrint);
+  var addonCat2 = menu2.find(function(c){return c.isAddon||c.cat==='Add On';});
+  var addonNamesPrint = [];
+  if(addonCat2) addonCat2.items.forEach(function(a){ if(selectedAddons[a.id]) addonNamesPrint.push(a.name); });
+  // for append mode, only print new items; otherwise print cart
+  var itemsToPrint = cart;
+  var tableLabel = isTkPrint
+    ? ('Tapau #'+(currentTable.replace('TK:','')===('NEW')?(tkCounter+1):tkOrders[currentTable.replace('TK:','')]&&tkOrders[currentTable.replace('TK:','')].num||''))
+    : currentTable;
+  var totalPrint = cart.reduce(function(s,ci){return s+ci.price*ci.qty;},0);
+  if(addonCat2) addonCat2.items.forEach(function(a){if(selectedAddons[a.id])totalPrint+=(a.price||0);});
+  var allNotesPrint = [...selectedQuickNotes,...(customNote.trim()?[customNote.trim()]:[])];
+  var timePrint = new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
+  printReceipt(tableLabel, itemsToPrint, addonNamesPrint, allNotesPrint, totalPrint, timePrint);
+
   setTimeout(goBack,1000);
 }
 
-function todayKey(){
+// ── PRINT ──
+function printReceipt(tableLabel, itemsToPrint, addonNames, allNotes, total, time){
+  var isId = LANGS[langIdx]==='id';
+  var tempHot = isId?'Panas':'热';
+  var tempCold = isId?'Sejuk':'冰';
+  var lines = '';
+
+  itemsToPrint.forEach(function(ci){
+    var tempStr = ci.coldOnly ? '' : (ci.temp==='hot' ? tempHot : tempCold);
+    var nameCol = ci.name + (tempStr?' ('+tempStr+')':'');
+    var qtyCol = 'x'+ci.qty;
+    var priceCol = 'RM '+( ci.price*ci.qty ).toFixed(2);
+    // pad to fill ~32 chars wide
+    var left = nameCol+' '+qtyCol;
+    var pad = Math.max(1, 32-left.length-priceCol.length);
+    lines += '<div style="display:flex;justify-content:space-between">'
+      + '<span>'+nameCol+' '+qtyCol+'</span>'
+      + '<span>'+priceCol+'</span></div>';
+  });
+
+  if(addonNames.length){
+    lines += '<div style="margin-top:4px;font-size:12px;color:#444">+ '+addonNames.join(', ')+'</div>';
+  }
+
+  var noteLine = allNotes.length
+    ? '<div style="margin-top:4px;font-size:12px;color:#444">'+(isId?'Catatan':'备注')+': '+allNotes.join('，')+'</div>'
+    : '';
+
+  var shopName = '新福州素食园';
+  var receipt = ''
+    +'<div style="text-align:center;font-weight:bold;font-size:15px;margin-bottom:4px">'+shopName+'</div>'
+    +'<div style="text-align:center;font-size:11px;margin-bottom:8px">New Foochow Vegetarian</div>'
+    +'<div style="border-top:1px dashed #000;margin:4px 0"></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
+      +'<span><b>'+(isId?'Meja':'桌号')+':</b> '+tableLabel+'</span>'
+      +'<span>'+time+'</span>'
+    +'</div>'
+    +'<div style="border-top:1px dashed #000;margin:4px 0"></div>'
+    +'<div style="margin-bottom:6px">'+lines+'</div>'
+    + noteLine
+    +'<div style="border-top:1px dashed #000;margin:6px 0"></div>'
+    +'<div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px">'
+      +'<span>'+(isId?'Total':'合计')+'</span>'
+      +'<span>RM '+total.toFixed(2)+'</span>'
+    +'</div>'
+    +'<div style="border-top:1px dashed #000;margin:6px 0"></div>'
+    +'<div style="text-align:center;font-size:11px;margin-top:6px">'+(isId?'Terima kasih!':'谢谢光临！')+'</div>';
+
+  var el = document.getElementById('print-receipt');
+  el.innerHTML = receipt;
+  window.print();
+}
   var d=new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
