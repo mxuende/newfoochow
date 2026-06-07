@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
+﻿<!DOCTYPE html>
+<html lang="zh"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>新福州素食园 — 点单</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -55,22 +54,22 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .floor-b-indoor{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 
 /* Table cards */
-.table-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:10px 8px 9px;position:relative;user-select:none;min-width:0;}
+.table-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 10px 10px;position:relative;user-select:none;min-width:0;min-height:104px;display:flex;flex-direction:column;justify-content:center;}
 .table-card.occupied{border-color:#C09060;background:#FFFBF5;}
 .table-card.occupied-ordered{border-color:var(--green-bd);background:var(--green-lt);}
-.table-card.empty{opacity:0.5;}
-.tnum{font-size:15px;font-weight:600;margin-bottom:2px;text-align:center;}
-.tocc{font-size:9px;font-weight:500;margin-bottom:1px;text-align:center;}
+.table-card.empty{opacity:0.72;}
+.tnum{font-size:18px;font-weight:700;margin-bottom:3px;text-align:center;}
+.tocc{font-size:11px;font-weight:600;margin-bottom:2px;text-align:center;}
 .table-card.occupied .tocc{color:var(--amber);}
 .table-card.occupied-ordered .tocc{color:var(--green);}
 .table-card.empty .tocc{color:var(--text3);}
-.tdrink{font-size:9px;color:var(--text3);text-align:center;min-height:12px;}
+.tdrink{font-size:11px;color:var(--text3);text-align:center;min-height:15px;}
 .table-card.occupied-ordered .tdrink{color:var(--green);}
-.cup-dot{position:absolute;top:5px;right:5px;background:var(--accent);color:#fff;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;}
-.order-btn{display:block;width:100%;margin-top:5px;padding:4px 0;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;font-family:inherit;cursor:pointer;}
+.cup-dot{position:absolute;top:7px;right:7px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.order-btn{display:block;width:100%;margin-top:8px;padding:8px 0;min-height:34px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;}
 .order-btn.modify{background:none;color:var(--green);border:1.5px solid var(--green);}
 .order-btn.append{background:none;color:var(--blue);border:1.5px solid var(--blue);}
-.clear-btn{display:block;width:100%;margin-top:3px;padding:3px 0;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;font-size:9px;font-family:inherit;cursor:pointer;}
+.clear-btn{display:block;width:100%;margin-top:5px;padding:6px 0;min-height:30px;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;font-size:11px;font-family:inherit;cursor:pointer;}
 
 /* outdoor toggle */
 .outdoor-toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--rsm);padding:9px 12px;margin-bottom:8px;border:1px solid var(--border);}
@@ -108,17 +107,26 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 .completed-item-temp{font-size:10px;color:var(--text3);}
 .completed-item-qty{font-size:12px;font-weight:500;color:var(--text2);}
 
+.menu-tools{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 13px 9px;display:flex;flex-direction:column;gap:7px;flex-shrink:0;}
+.menu-search{width:100%;border:1px solid var(--border2);border-radius:18px;background:var(--bg);padding:9px 13px;font-size:14px;font-family:inherit;color:var(--text);outline:none;}
+.menu-search:focus{border-color:var(--accent);background:var(--surface);}
+.cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:1px;scrollbar-width:none;}
+.cat-tabs::-webkit-scrollbar{display:none;}
+.cat-chip{border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:16px;padding:6px 11px;font-size:12px;font-weight:600;font-family:inherit;white-space:nowrap;cursor:pointer;}
+.cat-chip:active{background:var(--accent-lt);color:var(--accent);border-color:var(--accent);}
 .drinks-scroll{flex:1;overflow-y:auto;padding:11px 13px;padding-bottom:4px;}
-.cat-hd{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.7px;text-transform:uppercase;margin:13px 0 6px;}
+.cat-section[hidden]{display:none;}
+.cat-hd{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.7px;text-transform:uppercase;margin:13px 0 7px;}
 .cat-hd:first-child{margin-top:0;}
-.drink-item{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:9px 11px;margin-bottom:5px;gap:9px;}
+.drink-item{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:11px 12px;margin-bottom:6px;gap:10px;min-height:72px;}
 .drink-item.in-cart{border-color:var(--green-bd);background:var(--green-lt);}
+.drink-item[hidden]{display:none;}
 .drink-name-col{flex:1;min-width:0;}
-.drink-name{font-size:13px;font-weight:500;}
+.drink-name{font-size:15px;font-weight:600;}
 .drink-price-hint{font-size:11px;color:var(--text3);margin-top:1px;}
 .drink-controls{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
 .qty-row{display:flex;align-items:center;gap:6px;}
-.qty-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+.qty-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);}
 .qty-btn.plus{background:var(--accent);color:#fff;border-color:var(--accent);}
 .qty-num{min-width:16px;text-align:center;font-size:14px;font-weight:600;}
 .temp-pair{display:flex;gap:4px;align-items:center;}
@@ -144,7 +152,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 /* CART BAR — sticky bottom */
 .cart-bar{background:var(--surface);border-top:1px solid var(--border);padding:10px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .cart-total-amt{font-size:17px;font-weight:600;}
-.cart-cup-ct{font-size:11px;color:var(--text3);margin-top:1px;}
+.cart-cup-ct{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.35;max-height:34px;overflow:hidden;}
 .submit-btn{padding:11px 18px;background:var(--accent);color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
 .submit-btn:disabled{background:var(--text3);cursor:not-allowed;}
 
@@ -201,13 +209,14 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div id="completed-banner" style="display:none"></div>
+  <div class="menu-tools" id="menu-tools" style="display:none"></div>
   <div class="drinks-scroll" id="drinks-scroll" style="flex:1;overflow-y:auto;"></div>
   <div class="cart-bar">
     <div style="flex:1">
       <div class="cart-total-amt" id="cart-total">RM 0.00</div>
-      <div class="cart-cup-ct" id="cart-cups"></div>
+      <div class="cart-cup-ct" id="cart-cups">未选择饮料</div>
     </div>
-    <button class="submit-btn" id="submit-btn" onclick="showConfirm()" disabled>确认下单</button>
+    <button class="submit-btn" id="submit-btn" onclick="showConfirm()" disabled="">确认下单</button>
   </div>
 </div>
 
@@ -398,7 +407,7 @@ var tableStatuses={}, liveOrders={}, tkOrders={};
 var quickNotes=[...DEFAULT_QUICK_NOTES];
 var bOutdoorVisible=false;
 var remoteMenu=null, remoteTkMenu=null;
-var cart=[], selectedAddons={}, selectedQuickNotes=[], customNote='';
+var cart=[], selectedAddons={}, selectedQuickNotes=[], customNote='', menuFilterText='';
 var completedItems=[]; // items already done (append mode)
 var tkCounter=0; // for numbering takeaway orders
 
@@ -573,7 +582,7 @@ function renderTakeaway(){
 function openTkOrder(key,mode){
   currentTable=key?('TK:'+key):'TK:NEW';
   orderMode=mode;
-  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[];
+  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[]; menuFilterText='';
 
   if(key&&mode==='modify'){
     var o=tkOrders[key];
@@ -596,7 +605,7 @@ function openTkOrder(key,mode){
 function openOrder(tid,mode){
   currentTable=tid;
   orderMode=mode;
-  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[];
+  cart=[]; selectedAddons={}; selectedQuickNotes=[]; customNote=''; completedItems=[]; menuFilterText='';
 
   var existing=liveOrders[tid];
   if(existing&&existing.items){
@@ -642,12 +651,56 @@ function openOrder(tid,mode){
 
 // ── RENDER DRINKS ──
 function getMenu(isTk){ return isTk?(remoteTkMenu&&remoteTkMenu.length?remoteTkMenu:DEFAULT_TK_MENU):(remoteMenu||DEFAULT_MENU); }
+function safeText(v){ return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function catKey(cat,idx){ return String(cat.cat||cat.catZh||('cat-'+idx)).toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+idx; }
+function renderMenuTools(drinkCats){
+  var tools=document.getElementById('menu-tools');
+  if(!tools) return;
+  if(!drinkCats.length){ tools.style.display='none'; tools.innerHTML=''; return; }
+  var chips=drinkCats.map((cat,idx)=>{
+    var key=catKey(cat,idx);
+    return `<button class="cat-chip" onclick="scrollToCat('${key}')">${safeText(cat.catZh||cat.cat)}</button>`;
+  }).join('');
+  tools.innerHTML=`<input class="menu-search" id="menu-search" value="${safeText(menuFilterText)}" placeholder="搜索饮料 / Search" oninput="filterMenu(this.value)">
+    <div class="cat-tabs">${chips}</div>`;
+  tools.style.display='flex';
+}
+function scrollToCat(key){
+  var scroller=document.getElementById('drinks-scroll');
+  var target=document.getElementById('cat-'+key);
+  if(!scroller||!target) return;
+  scroller.scrollTop=target.offsetTop-scroller.offsetTop-8;
+}
+function filterMenu(value){
+  menuFilterText=(value||'').trim().toLowerCase();
+  document.querySelectorAll('.cat-section').forEach(section=>{
+    var visibleCount=0;
+    section.querySelectorAll('.drink-item').forEach(item=>{
+      var hay=(item.dataset.search||'').toLowerCase();
+      var show=!menuFilterText||hay.includes(menuFilterText);
+      item.hidden=!show;
+      if(show) visibleCount++;
+    });
+    section.hidden=visibleCount===0;
+  });
+}
+function cartLine(ci){
+  return ci.name+(ci.coldOnly?'':(ci.temp==='hot'?t('hot'):t('cold')))+'×'+ci.qty;
+}
+function cartSummary(cups){
+  if(!cups) return t('no-drinks');
+  var lines=cart.map(cartLine);
+  var shown=lines.slice(0,3).join('，');
+  if(lines.length>3) shown+=' +' +(lines.length-3);
+  return cups+' '+t('cups')+' · '+shown;
+}
 
 function renderDrinks(isTk){
   var menu=getMenu(isTk);
   var addonCat=menu.find(c=>c.isAddon||c.cat==='Add On');
   var drinkCats=menu.filter(c=>!c.isAddon&&c.cat!=='Add On');
   var html='';
+  renderMenuTools(drinkCats);
 
   if(!drinkCats.length){
     html=`<div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px">
@@ -655,8 +708,9 @@ function renderDrinks(isTk){
     </div>`;
   }
 
-  drinkCats.forEach(cat=>{
-    html+=`<div class="cat-hd">${cat.catZh||cat.cat}</div>`;
+  drinkCats.forEach((cat,catIdx)=>{
+    var key=catKey(cat,catIdx);
+    html+=`<div class="cat-section" id="cat-${key}" data-cat-key="${key}"><div class="cat-hd">${cat.catZh||cat.cat}</div>`;
     cat.items.forEach(d=>{
       var hotQty=cart.filter(ci=>ci.drinkId===d.id&&ci.temp==='hot').reduce((s,ci)=>s+ci.qty,0);
       var coldQty=cart.filter(ci=>ci.drinkId===d.id&&ci.temp==='cold').reduce((s,ci)=>s+ci.qty,0);
@@ -666,7 +720,7 @@ function renderDrinks(isTk){
       if(d.hasHot&&d.hasCold) priceHint=`${t('hot')} RM${(d.hotPrice||0).toFixed(2)} / ${t('cold')} RM${(d.coldPrice||0).toFixed(2)}`;
       else priceHint=`RM ${(d.coldPrice||d.hotPrice||0).toFixed(2)}`;
 
-      html+=`<div class="drink-item ${inCart?'in-cart':''}" id="ditem-${d.id}">
+      html+=`<div class="drink-item ${inCart?'in-cart':''}" id="ditem-${d.id}" data-search="${safeText([d.name,d.id,cat.cat,cat.catZh].join(' '))}">
         <div class="drink-name-col">
           <div class="drink-name">${d.name}</div>
           <div class="drink-price-hint">${priceHint}</div>
@@ -695,6 +749,7 @@ function renderDrinks(isTk){
       }
       html+=`</div></div>`;
     });
+    html+=`</div>`;
   });
 
   if(addonCat&&addonCat.items.length){
@@ -720,6 +775,7 @@ function renderDrinks(isTk){
   </div>`;
 
   document.getElementById('drinks-scroll').innerHTML=html;
+  filterMenu(menuFilterText);
 }
 
 function chgQty(drinkId,temp,delta,isTk){
@@ -773,7 +829,7 @@ function updateCartBar(){
   if(addonCat) addonCat.items.forEach(a=>{if(selectedAddons[a.id])total+=(a.price||0);});
   var cups=cart.reduce((s,ci)=>s+ci.qty,0);
   document.getElementById('cart-total').textContent='RM '+total.toFixed(2);
-  document.getElementById('cart-cups').textContent=cups>0?cups+' '+t('cups'):t('no-drinks');
+  document.getElementById('cart-cups').textContent=cartSummary(cups);
   document.getElementById('submit-btn').disabled=cups===0;
   document.getElementById('submit-btn').textContent=t('submit');
 }
@@ -936,5 +992,8 @@ function showToast(msg){
 applyLang();
 switchZone('A');
 </script>
+
+
 </body>
 </html>
+
